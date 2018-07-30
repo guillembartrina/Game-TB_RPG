@@ -44,10 +44,12 @@ public:
     Unit();
     ~Unit();
 
+    void init(const UnitData& unitData);
+
     std::string _name;
 
-    std::set<WeaponType> _weaponCompatibility;
-    std::vector<std::string> _byNameWeaponCompatibility;
+    //std::set<WeaponType> _weaponCompatibility;
+    //std::vector<std::string> _byNameWeaponCompatibility;
     Weapon _weapon;
 
     MovementType _movementType;

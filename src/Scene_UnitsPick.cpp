@@ -37,7 +37,22 @@ void Scene_UnitsPick::handleEvents(const sf::Event& event)
                 {
                     if(_unitsList1.allPicked() && _unitsList2.allPicked())
                     {
-                        _sceneHandler.addScene(std::unique_ptr<Scene>(new Scene_Play(_sceneHandler, _resources, _mapData)));
+                        std::list<UnitData> team1;
+                        std::list<std::list<Item>::iterator>::iterator it1 = _unitsList1.getPicked().begin();
+                        while(it1 != _unitsList1.getPicked().end())
+                        {
+                            team1.insert(team1.end(), _database.getUnits().at((*it1)->_id));
+                            ++it1;
+                        }
+                        std::list<UnitData> team2;
+                        std::list<std::list<Item>::iterator>::iterator it2 = _unitsList2.getPicked().begin();
+                        while(it2 != _unitsList2.getPicked().end())
+                        {
+                            team1.insert(team1.end(), _database.getUnits().at((*it2)->_id));
+                            ++it2;
+                        }
+
+                        _sceneHandler.addScene(std::unique_ptr<Scene>(new Scene_Play(_sceneHandler, _resources, _mapData, std::make_pair(team1, team2))));
                     }
                 }
                     break;
@@ -94,7 +109,7 @@ void Scene_UnitsPick::loadUnitsToList()
 {
     _database.loadUnits(_resources);
 
-    std::list<UnitData>::iterator it = _database.getUnits().begin();
+    std::vector<UnitData>::iterator it = _database.getUnits().begin();
 
     while(it != _database.getUnits().end())
     {

@@ -18,11 +18,12 @@ public:
     Database();
     ~Database();
 
+    void loadWeapons();
     void loadUnits(Resources& resources);
     void loadMaps(Resources& resources);
 
-    std::list<UnitData>& getUnits();
-    std::list<MapData>& getMaps();
+    std::vector<UnitData>& getUnits();
+    std::vector<MapData>& getMaps();
 
     void printWeapons();
     void printUnits();
@@ -34,11 +35,9 @@ private:
     bool _unitsLoaded;
     bool _mapsLoaded;
 
-    std::list<Weapon> _weapons;
-    std::list<UnitData> _units;
-    std::list<MapData> _maps;
-
-    void loadWeapons();
+    std::vector<Weapon> _weapons;
+    std::vector<UnitData> _units;
+    std::vector<MapData> _maps;
 
 };
 

@@ -36,17 +36,7 @@ void Scene_MapPick::handleEvents(const sf::Event& event)
                 {
                     if(_mapList.allPicked())
                     {
-                        int mapNum = _mapList.getPicked().front()->_id;
-                        std::list<MapData>::iterator it = _database.getMaps().begin();
-                        int i = 0;
-                        MapData mapData;
-                        while(it != _database.getMaps().end())
-                        {
-                            if(mapNum == i) mapData = *it;
-                            ++i;
-                            ++it;
-                        }
-                        _sceneHandler.addScene(std::unique_ptr<Scene>(new Scene_UnitsPick(_sceneHandler, _resources, _database, mapData)));
+                        _sceneHandler.addScene(std::unique_ptr<Scene>(new Scene_UnitsPick(_sceneHandler, _resources, _database, _database.getMaps().at(_mapList.getPicked().front()->_id))));
                     }
                 }
                     break;
@@ -100,7 +90,7 @@ void Scene_MapPick::loadMapsToList()
 {
     _database.loadMaps(_resources);
 
-    std::list<MapData>::iterator it = _database.getMaps().begin();
+    std::vector<MapData>::iterator it = _database.getMaps().begin();
 
     while(it != _database.getMaps().end())
     {
