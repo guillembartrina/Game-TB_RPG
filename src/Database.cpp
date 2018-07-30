@@ -219,6 +219,20 @@ void Database::loadMaps(Resources& resources)
         tmpI.saveToFile(resources.getResourcePath() + "textures/" + _maps[i]._name + ".png");
 
         _maps[i]._preview.setTexture(resources.Texture(_maps[i]._name));
+        
+
+        _maps[i]._numTeam1 = data["Maps"][i]["units"]["numTeam1"].as_int();
+
+        int size1 = data["Maps"][i]["units"]["posTeam1"].size();
+        _maps[i]._posTeam1 = std::vector<Coord>(size1);
+        for(int j = 0; j < size1; ++j) _maps[i]._posTeam1[j] = Coord(data["Maps"][i]["units"]["posTeam1"][j][0].as_int(), data["Maps"][i]["units"]["posTeam1"][j][1].as_int());
+
+        
+        _maps[i]._numTeam2 = data["Maps"][i]["units"]["numTeam2"].as_int();
+
+        int size2 = data["Maps"][i]["units"]["posTeam2"].size();
+        _maps[i]._posTeam2 = std::vector<Coord>(size2);
+        for(int j = 0; j < size2; ++j) _maps[i]._posTeam2[j] = Coord(data["Maps"][i]["units"]["posTeam2"][j][0].as_int(), data["Maps"][i]["units"]["posTeam2"][j][1].as_int());
 
     }
 

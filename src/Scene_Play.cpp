@@ -13,7 +13,7 @@ void Scene_Play::init()
     t_title.setFillColor(sf::Color::White);
     t_title.setPosition(50, 700);
 
-    _mapSize = sf::Vector2u(_mapData._map.size(), _mapData._map[0].size());
+    _mapSize = sf::Vector2i(_mapData._map.size(), _mapData._map[0].size());
     _map = Map(sf::FloatRect(10, 10, 780, 600));
     _map.setMap(_resources, _mapData);
 
@@ -53,6 +53,42 @@ void Scene_Play::handleEvents(const sf::Event& event)
             {
                 case sf::Keyboard::E:
                     _sceneHandler.popScene();
+                    break;
+                case sf::Keyboard::Up:
+                {
+                    if(_pointer.y > 0)
+                    {  
+                        --_pointer.y;
+                        _map.setPointer(_pointer);
+                    }
+                }
+                    break;
+                case sf::Keyboard::Left:
+                {
+                    if(_pointer.x > 0)
+                    {  
+                        --_pointer.x;
+                        _map.setPointer(_pointer);
+                    }
+                }
+                    break;
+                case sf::Keyboard::Right:
+                {
+                    if(_pointer.x < _mapSize.x-1)
+                    {  
+                        ++_pointer.x;
+                        _map.setPointer(_pointer);
+                    }
+                }
+                    break;
+                case sf::Keyboard::Down:
+                {
+                    if(_pointer.y < _mapSize.y-1)
+                    {  
+                        ++_pointer.y;
+                        _map.setPointer(_pointer);
+                    }
+                }
                     break;
                 default:
                     break;

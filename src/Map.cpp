@@ -27,6 +27,8 @@ Map::Map(sf::FloatRect mapRect)
     rs_background.setFillColor(sf::Color::Black);
     rs_background.setOutlineColor(sf::Color::Yellow);
     rs_background.setOutlineThickness(4.f);
+
+    _printPointer = false;
 }
 
 Map::~Map() {}
@@ -61,7 +63,27 @@ void Map::setMap(Resources& resources, const MapData& map)
         }      
     }
 
+    rs_pointer.setTexture(&resources.Texture("pointer"));
+    rs_pointer.setTextureRect(sf::IntRect(0, 0, 32, 32));
+    rs_pointer.setSize(_tileSize);
+    rs_pointer.setPosition(_mapRect.left, _mapRect.top);
+
+    _printPointer = true;
+
     _mapLoaded = true;
+}
+
+void Map::setPointer(const Coord& coord)
+{
+    if(_mapLoaded)
+    {
+        rs_pointer.setPosition(_mapRect.left + coord.x * _tileSize.x, _mapRect.top + coord.y * _tileSize.y);
+    }
+}
+
+Cell& Map::getCell(const Coord& coord)
+{
+    return _map[coord.x][coord.y];
 }
 
 void Map::update(const sf::Time deltatime)
@@ -79,5 +101,7 @@ void Map::draw(sf::RenderWindow& window) const
         {
             window.draw(_mapTiles[i]);
         }
+
+        if(_printPointer) window.draw(rs_pointer);
     }
 }

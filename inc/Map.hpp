@@ -17,6 +17,12 @@ struct MapData
     std::string _name;
     std::vector<std::vector<TerrainType>> _map;
 
+    int _numTeam1;
+    int _numTeam2;
+
+    std::vector<Coord> _posTeam1;
+    std::vector<Coord> _posTeam2;
+
     sf::Sprite _preview;
 };
 
@@ -28,8 +34,8 @@ struct Cell
     //Unit* _unit;
 
     //BFS
-    //bool _checked;
-    //unsigned int _distance;
+    bool _checked;
+    unsigned int _distance;
 
     //PointerType _pointer;
 
@@ -47,6 +53,10 @@ public:
     ~Map();
 
     void setMap(Resources& resources, const MapData& map);
+
+    void setPointer(const Coord& coord);
+
+    Cell& getCell(const Coord& coord);
 
     void update(const sf::Time deltatime);
 
@@ -67,6 +77,10 @@ private:
     std::vector<std::vector<Cell>> _map;
 
     std::vector<sf::RectangleShape> _mapTiles;
+
+    bool _printPointer;
+
+    sf::RectangleShape rs_pointer;
 };
 
 #endif

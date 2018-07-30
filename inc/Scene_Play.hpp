@@ -27,6 +27,8 @@ public:
 
     void resume();
 
+    void bfs(unsigned int team, Coord root, int restDistance);
+
 private:
 
     sf::Text t_title;
@@ -34,7 +36,7 @@ private:
     MapData _mapData;
     Map _map;
 
-    sf::Vector2u _mapSize;
+    sf::Vector2i _mapSize;
 
     std::pair<std::list<UnitData>, std::list<UnitData>> _unitsData;
     std::vector<Unit> _team1;

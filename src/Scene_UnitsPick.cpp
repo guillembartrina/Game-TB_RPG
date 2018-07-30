@@ -19,8 +19,8 @@ void Scene_UnitsPick::init()
     t_info.setFillColor(sf::Color::White);
     t_info.setPosition(50, 100);
 
-    _unitsList1 = List(sf::FloatRect(30, 170, 340, 600), 4, 1);
-    _unitsList2 = List(sf::FloatRect(430, 170, 340, 600), 4, 1);
+    _unitsList1 = List(sf::FloatRect(30, 170, 340, 600), 4, _mapData._numTeam1);
+    _unitsList2 = List(sf::FloatRect(430, 170, 340, 600), 4, _mapData._numTeam2);
 
     loadUnitsToList();
 }
