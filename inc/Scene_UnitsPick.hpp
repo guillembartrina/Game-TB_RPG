@@ -31,14 +31,15 @@ private:
     sf::Text t_title;
     sf::Text t_info;
 
-    List _unitsList1;
-    List _unitsList2;
+    std::vector<List> _unitsLists;
 
     Database& _database;
 
-    void loadUnitsToList();
-
     MapData _mapData;
+
+    unsigned int _currentTeam;
+
+    void loadUnitsToLists();
 
 };
 

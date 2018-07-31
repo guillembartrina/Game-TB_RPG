@@ -19,10 +19,16 @@ void Scene_UnitsPick::init()
     t_info.setFillColor(sf::Color::White);
     t_info.setPosition(50, 100);
 
-    _unitsList1 = List(sf::FloatRect(30, 170, 340, 600), 4, _mapData._numTeam1);
-    _unitsList2 = List(sf::FloatRect(430, 170, 340, 600), 4, _mapData._numTeam2);
+    int numTeams = _mapData._teams.size();
+    _unitsLists = std::vector<List>(numTeams);
 
-    loadUnitsToList();
+    int listW = 800/numTeams;
+
+    for(int i = 0; i < numTeams; ++i) _unitsLists[i] = List(sf::FloatRect(10 + i*listW, 170, listW-20, 600), 4, _mapData._teams[i].size());
+
+    _currentTeam = 0;
+
+    loadUnitsToLists();
 }
 
 void Scene_UnitsPick::handleEvents(const sf::Event& event)
@@ -35,47 +41,43 @@ void Scene_UnitsPick::handleEvents(const sf::Event& event)
             {
                 case sf::Keyboard::N:
                 {
-                    if(_unitsList1.allPicked() && _unitsList2.allPicked())
+                    if(_unitsLists[_currentTeam].allPicked())
                     {
-                        std::list<UnitData> team1;
-                        std::list<std::list<Item>::iterator>::iterator it1 = _unitsList1.getPicked().begin();
-                        while(it1 != _unitsList1.getPicked().end())
+                        if(_currentTeam == _unitsLists.size()-1)
                         {
-                            team1.insert(team1.end(), _database.getUnits().at((*it1)->_id));
-                            ++it1;
-                        }
-                        std::list<UnitData> team2;
-                        std::list<std::list<Item>::iterator>::iterator it2 = _unitsList2.getPicked().begin();
-                        while(it2 != _unitsList2.getPicked().end())
-                        {
-                            team1.insert(team1.end(), _database.getUnits().at((*it2)->_id));
-                            ++it2;
-                        }
+                            int size = _unitsLists.size();
+                            std::vector<std::list<UnitData>> teams(size);
+                            for(int i = 0; i < size; ++i)
+                            {
+                                std::list<std::list<Item>::iterator>::iterator it = _unitsLists[i].getPicked().begin();
+                                while(it != _unitsLists[i].getPicked().end())
+                                {
+                                    teams[i].insert(teams[i].end(), _database.getUnits().at((*it)->_id));
+                                    ++it;
+                                }
+                            }
 
-                        _sceneHandler.addScene(std::unique_ptr<Scene>(new Scene_Play(_sceneHandler, _resources, _mapData, std::make_pair(team1, team2))));
+                            _sceneHandler.addScene(std::unique_ptr<Scene>(new Scene_Play(_sceneHandler, _resources, _mapData, teams)));
+                        }
+                        else
+                        {
+                            ++_currentTeam;
+                        }
                     }
                 }
                     break;
+                case sf::Keyboard::Up:
+                    _unitsLists[_currentTeam].up();
+                    break;
+                case sf::Keyboard::Down:
+                    _unitsLists[_currentTeam].down();
+                    break;
+                case sf::Keyboard::Space:
+                    _unitsLists[_currentTeam].pick();
+                    break;
+                
                 case sf::Keyboard::E:
                     _sceneHandler.popScene();
-                    break;
-                case sf::Keyboard::Y:
-                    _unitsList1.up();
-                    break;
-                case sf::Keyboard::H:
-                    _unitsList1.down();
-                    break;
-                case sf::Keyboard::J:
-                    _unitsList1.pick();
-                    break;
-                case sf::Keyboard::I:
-                    _unitsList2.up();
-                    break;
-                case sf::Keyboard::K:
-                    _unitsList2.down();
-                    break;
-                case sf::Keyboard::L:
-                    _unitsList2.pick();
                     break;
                 default:
                     break;
@@ -89,23 +91,28 @@ void Scene_UnitsPick::handleEvents(const sf::Event& event)
 
 void Scene_UnitsPick::update(const sf::Time deltatime)
 {
-    _unitsList1.update(deltatime);
-    _unitsList2.update(deltatime);
+    for(unsigned int i = _currentTeam; i < _unitsLists.size(); ++i)
+    {
+        _unitsLists[i].update(deltatime);
+    }
 }
 
 void Scene_UnitsPick::draw(sf::RenderWindow& window) const
 {
     window.draw(t_title);
     window.draw(t_info);
-    _unitsList1.draw(window);
-    _unitsList2.draw(window);
+
+    for(unsigned int i = 0; i < _unitsLists.size(); ++i)
+    {
+        _unitsLists[i].draw(window);
+    }
 }
 
 void Scene_UnitsPick::pause() {}
 
 void Scene_UnitsPick::resume() {}
 
-void Scene_UnitsPick::loadUnitsToList()
+void Scene_UnitsPick::loadUnitsToLists()
 {
     _database.loadUnits(_resources);
 
@@ -127,8 +134,10 @@ void Scene_UnitsPick::loadUnitsToList()
 
         tmp.addAnimatedSprite(sf::Vector2f(120, 10), it->_sprite, "idle");
 
-        _unitsList1.add(tmp);
-        _unitsList2.add(tmp);
+        for(unsigned int i = 0; i < _unitsLists.size(); ++i)
+        {
+            _unitsLists[i].add(tmp);
+        }
 
         ++it;
     }

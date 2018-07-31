@@ -17,11 +17,7 @@ struct MapData
     std::string _name;
     std::vector<std::vector<TerrainType>> _map;
 
-    int _numTeam1;
-    int _numTeam2;
-
-    std::vector<Coord> _posTeam1;
-    std::vector<Coord> _posTeam2;
+    std::vector<std::vector<Coord>> _teams;
 
     sf::Sprite _preview;
 };

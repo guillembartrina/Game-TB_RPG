@@ -1,7 +1,7 @@
 
 #include "Scene_Play.hpp"
 
-Scene_Play::Scene_Play(SceneHandler& sceneHandler, Resources& resources, const MapData& mapData, const std::pair<std::list<UnitData>, std::list<UnitData>>& unitsData) : Scene(sceneHandler, resources), _mapData(mapData), _unitsData(unitsData) {}
+Scene_Play::Scene_Play(SceneHandler& sceneHandler, Resources& resources, const MapData& mapData, const std::vector<std::list<UnitData>>& unitsData) : Scene(sceneHandler, resources), _mapData(mapData), _unitsData(unitsData) {}
 
 Scene_Play::~Scene_Play() {}
 
@@ -17,9 +17,10 @@ void Scene_Play::init()
     _map = Map(sf::FloatRect(10, 10, 780, 600));
     _map.setMap(_resources, _mapData);
 
-    _team1 = std::vector<Unit>(_unitsData.first.size());
-    _team2 = std::vector<Unit>(_unitsData.second.size());
+    //_team1 = std::vector<Unit>(_unitsData.first.size());
+    //_team2 = std::vector<Unit>(_unitsData.second.size());
 
+    /*
     int i = 0;
 
     std::list<UnitData>::iterator it1 = _unitsData.first.begin();
@@ -39,6 +40,7 @@ void Scene_Play::init()
         ++i;
         ++it2;
     }   
+    */
 
     _pointer = Coord(0, 0);
 }
