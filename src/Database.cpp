@@ -104,7 +104,7 @@ void Database::loadUnits(Resources& resources)
 
         tmp = data["Units"][i]["weapon"]["weaponCompatibility"].size();
 
-        for(int j = 0; j < size; ++j)
+        for(int j = 0; j < tmp; ++j)
         {
             _units[i]._weaponCompatibility.insert(_units[i]._weaponCompatibility.end(), WeaponType(data["Units"][i]["weapon"]["weaponCompatibility"][j].as_int()));
         }
@@ -155,7 +155,7 @@ void Database::loadUnits(Resources& resources)
             _units[i]._baseAttributes[j] = data["Units"][i]["baseAttributes"][j].as_int();
         }
 
-        _units[i]._sprite.addAnimation("idle", resources.Texture(data["Units"][i]["sprite"].as_string()), 9, sf::Vector2u(64, 64), sf::seconds(0.1f), true);
+        _units[i]._sprite.addAnimation("idle", resources.Texture(data["Units"][i]["sprite"].as_string()), 8, sf::Vector2u(64, 64), sf::seconds(0.1f), true);
         _units[i]._sprite.setActiveAnimation("idle");
     }
 
@@ -366,17 +366,14 @@ void Database::printMaps()
         std::cerr << "-------------------------------------" << std::endl;
         std::cerr << "Name: " << it->_name << std::endl;
         std::cerr << "Map:" << endl;
-        std::vector<std::vector<TerrainType>>::iterator it1 = it->_map.begin();
-        while(it1 != it->_map.end())
+        
+        for(unsigned int i = 0; i < it->_map[0].size(); ++i)
         {
             std::cerr << "   ";
-            std::vector<TerrainType>::iterator it2 = it1->begin();
-            while(it2 != it1->end())
+            for(unsigned int j = 0; j < it->_map.size(); ++j)
             {
-                std::cerr << " " << *it2;
-                ++it2;
+                std::cerr << " " << it->_map[j][i];
             }
-            ++it1;
             std::cerr << std::endl;
         }
         std::cerr << "-------------------------------------" << std::endl;

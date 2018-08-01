@@ -59,6 +59,14 @@ enum TerrainAttribute
     TA_EFFECT
 };
 
+enum ActionType
+{
+    AT_MOVE,
+    AT_ENEMY,
+    AT_ALLY,
+    AT_NONE
+};
+
 enum TurnPhase
 {
     TP_BEGIN,

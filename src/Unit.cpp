@@ -28,7 +28,7 @@ Unit::~Unit()
     }
 }
 
-void Unit::init(const UnitData& unitData)
+void Unit::init(const UnitData& unitData, int team, const Coord& position)
 {
     _name = unitData._name;
     _weapon = unitData._weapon;
@@ -40,8 +40,9 @@ void Unit::init(const UnitData& unitData)
     _otherBaseAttributes = unitData._otherBaseAttributes;
     _sprite = unitData._sprite;
 
-    _team = 1;
+    _team = team;
     _alive = true;
+    _position = position;
     _pendingUpdate = false;
     _dazed = false;
     _fixed = false;

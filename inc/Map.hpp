@@ -9,6 +9,7 @@
 
 #include "Coord.hpp"
 #include "Resources.hpp"
+#include "Unit.hpp"
 
 #include "Enums.hpp"
 
@@ -27,17 +28,24 @@ struct Cell
     Coord _position;
     TerrainType _type;
 
-    //Unit* _unit;
+    bool _empty;
+    Unit* _unit;
 
     //BFS
     bool _checked;
     unsigned int _distance;
 
+    ActionType _action;
+    sf::RectangleShape rs_action;
+
     //PointerType _pointer;
 
-    Cell();
+    sf::RectangleShape rs_shape;
 
+    Cell();
     Cell(Coord position, TerrainType type);
+
+    bool empty() const;
 };
 
 class Map
@@ -48,11 +56,14 @@ public:
     Map(sf::FloatRect mapRect);
     ~Map();
 
-    void setMap(Resources& resources, const MapData& map);
+    void setMap(Resources& resources, const MapData& map, std::vector<std::vector<Unit>>& teams);
 
     void setPointer(const Coord& coord);
 
+    bool existCell(const Coord& coord);
     Cell& getCell(const Coord& coord);
+
+    void selectCell(const Coord& coord);
 
     void update(const sf::Time deltatime);
 
@@ -72,11 +83,15 @@ private:
 
     std::vector<std::vector<Cell>> _map;
 
-    std::vector<sf::RectangleShape> _mapTiles;
-
     bool _printPointer;
-
     sf::RectangleShape rs_pointer;
+
+    bool _printSelector;
+    sf::RectangleShape rs_selector;
+
+    //void bfs(unsigned int team, const std::set<int>& range, int maxRange, MovementType type, const Coord& currentCell, int currentDistance);
+
+    bool canPassUnitTerrain(MovementType mType, TerrainType tType);
 };
 
 #endif

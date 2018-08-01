@@ -15,34 +15,33 @@ void Scene_Play::init()
 
     _mapSize = sf::Vector2i(_mapData._map.size(), _mapData._map[0].size());
     _map = Map(sf::FloatRect(10, 10, 780, 600));
-    _map.setMap(_resources, _mapData);
 
-    //_team1 = std::vector<Unit>(_unitsData.first.size());
-    //_team2 = std::vector<Unit>(_unitsData.second.size());
+    int numTeams = _unitsData.size();
 
-    /*
-    int i = 0;
+    _teams = std::vector<std::vector<Unit>>(numTeams);
 
-    std::list<UnitData>::iterator it1 = _unitsData.first.begin();
-    while(it1 != _unitsData.first.end())
+    for(int i = 0; i < numTeams; ++i)
     {
-        _team1[i].init(*it1);
-        ++i;
-        ++it1;
+        _teams[i] = std::vector<Unit>(_unitsData[i].size());
+
+        int j = 0;
+
+        std::list<UnitData>::iterator it = _unitsData[i].begin();
+        while(it != _unitsData[i].end())
+        {
+            _teams[i][j].init(*it, i, _mapData._teams[i][j]);
+            ++j;
+            ++it;
+        }
     }
 
-    i = 0;
-
-    std::list<UnitData>::iterator it2 = _unitsData.second.begin();
-    while(it2 != _unitsData.second.end())
-    {
-        _team2[i].init(*it2);
-        ++i;
-        ++it2;
-    }   
-    */
+    _map.setMap(_resources, _mapData, _teams);
 
     _pointer = Coord(0, 0);
+    _selected = false;
+    _selector = Coord(0, 0);
+
+    _currentTeam = 0;
 }
 
 void Scene_Play::handleEvents(const sf::Event& event)
@@ -89,6 +88,16 @@ void Scene_Play::handleEvents(const sf::Event& event)
                     {  
                         ++_pointer.y;
                         _map.setPointer(_pointer);
+                    }
+                }
+                    break;
+                case sf::Keyboard::Space:
+                {
+                    if(!_selected && !_map.getCell(_pointer).empty() && _map.getCell(_pointer)._unit->_team == _currentTeam)
+                    {
+                        _map.selectCell(_pointer);
+                        _selector = _pointer;
+                        _selected = true;
                     }
                 }
                     break;

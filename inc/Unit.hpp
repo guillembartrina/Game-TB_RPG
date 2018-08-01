@@ -44,7 +44,7 @@ public:
     Unit();
     ~Unit();
 
-    void init(const UnitData& unitData);
+    void init(const UnitData& unitData, int team, const Coord& position);
 
     std::string _name;
 
@@ -67,6 +67,8 @@ public:
     unsigned int _team;
 
     bool _alive;
+
+    Coord _position;
 
     std::vector<int> _attributes;
     std::list<AttrBase*> _otherAttributes;
