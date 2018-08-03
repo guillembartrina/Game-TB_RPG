@@ -99,7 +99,7 @@ void Map::setMap(Resources& resources, const MapData& map, std::vector<std::vect
     {
         for(unsigned int j = 0; j < teams[i].size(); ++j)
         {
-            if(getCell(teams[i][j]._position).empty() && canPass(teams[i][j]._movementType, getCell(teams[i][j]._position)._type))
+            if(getCell(teams[i][j]._position).empty() && canPass(teams[i][j]._movementType, getCell(teams[i][j]._position)._type).first)
             {
                 getCell(teams[i][j]._position)._unit = &teams[i][j];
                 getCell(teams[i][j]._position)._checked = false;
@@ -237,27 +237,30 @@ void Map::bfs(const Coord& origin, unsigned int team, const std::set<int>& range
         ++it;
     }
 
-    std::queue<Coord> q;
-    q.push(origin);
+    //bfs_i(origin, 0, team, range, maxRange, type);
+
+    std::queue<std::pair<Coord, int>> q;
+    q.push(std::make_pair(origin, 0));
 
     int count1 = 1, count2 = 0;
     int dist = 0;
 
     while(!q.empty())
     {
-        Coord current = q.front();
+        std::pair<Coord, int> current = q.front();
         q.pop();
-        Cell& cell = getCell(current);
+        Cell& cell = getCell(current.first);
 
         --count1;
 
         bool seg = false;
+        int mod = 0;
 
         if(!cell._checked)
         {
-            cell._distance = dist;
+            cell._distance = dist + current.second;
 
-            if(dist > maxRange)
+            if(dist + current.second > maxRange)
             {
                 if(!cell.empty())
                 {
@@ -267,13 +270,13 @@ void Map::bfs(const Coord& origin, unsigned int team, const std::set<int>& range
             }
             else
             {
-                std::cerr << ":" << dist << "::" << (range.find(dist) == range.end()) << std::endl;
-                if(range.find(dist) == range.end())
+                if(range.find(dist + current.second) == range.end())
                 {
                     if(cell.empty())
                     {
                         cell._action = ActionType::AT_NONE;
-                        if(canPass(type, cell._type)) seg = true;
+                        std::pair<bool, int> res = canPass(type, cell._type);
+                        if(res.first) { seg = true; mod = res.second; }
                     }
                     else
                     {
@@ -292,10 +295,12 @@ void Map::bfs(const Coord& origin, unsigned int team, const std::set<int>& range
                 {
                     if(dist == 0 || cell.empty())
                     {
-                        if(canPass(type, cell._type))
+                        std::pair<bool, int> res = canPass(type, cell._type);
+                        if(res.first)
                         {
                             cell._action = ActionType::AT_MOVE;
                             seg = true;
+                            mod = res.second;
                         }
                     }
                     else
@@ -310,17 +315,15 @@ void Map::bfs(const Coord& origin, unsigned int team, const std::set<int>& range
                             seg = true;
                         }
                     }
-                }
-
-                
+                }   
             }
 
             if(seg)
             {
-                if(current.x < int(_WCells-1)) { q.push(current + Coord(1, 0)); ++count2; }
-                if(current.x > 0) { q.push(current + Coord(-1, 0)); ++count2; }
-                if(current.y < int(_HCells-1)) { q.push(current + Coord(0, 1)); ++count2; }
-                if(current.y > 0) { q.push(current + Coord(0, -1)); ++count2; }
+                if(current.first.x < int(_WCells-1)) { q.push(std::make_pair(current.first + Coord(1, 0), mod)); ++count2; }
+                if(current.first.x > 0) { q.push(std::make_pair(current.first + Coord(-1, 0), mod)); ++count2; }
+                if(current.first.y < int(_HCells-1)) { q.push(std::make_pair(current.first + Coord(0, 1), mod)); ++count2; }
+                if(current.first.y > 0) { q.push(std::make_pair(current.first + Coord(0, -1), mod)); ++count2; }
             }
             
             cell._checked = true;
@@ -335,9 +338,10 @@ void Map::bfs(const Coord& origin, unsigned int team, const std::set<int>& range
     }
 }
 
-bool Map::canPass(MovementType movementType, TerrainType terrainType)
+std::pair<bool, int> Map::canPass(MovementType movementType, TerrainType terrainType)
 {
     bool pass = true;
+    int mod = 0;
 
     switch(terrainType)
     {
@@ -349,6 +353,7 @@ bool Map::canPass(MovementType movementType, TerrainType terrainType)
             break;
         case TerrainType::TT_FOREST:
             if(movementType == MovementType::MT_MOUNTED) pass = false;
+            if(movementType == MovementType::MT_WALKING) mod = 1;
             break;
         case TerrainType::TT_MOUNTAIN:
             if(movementType == MovementType::MT_MOUNTED || movementType == MovementType::MT_WALKING) pass = false;
@@ -357,5 +362,84 @@ bool Map::canPass(MovementType movementType, TerrainType terrainType)
             break;
     }
 
-    return pass;
+    return std::make_pair(pass, mod);
 }
+
+/*
+
+void Map::bfs_i(const Coord& current, unsigned int dist, unsigned int team, const std::set<int>& range, unsigned int maxRange, MovementType type)
+{
+    Cell& cell = getCell(current);
+
+    bool seg = false;
+
+    if(!cell._checked || (cell._checked && cell._distance > dist))
+    {
+        cell._distance = dist;
+
+        if(dist > maxRange)
+        {
+            if(!cell.empty())
+            {
+                if(cell._unit->_team != team) cell._action = ActionType::AT_ENEMY;
+                else cell._action = ActionType::AT_ALLY;
+            }
+        }
+        else
+        {
+            if(range.find(dist) == range.end())
+            {
+                if(cell.empty())
+                {
+                    cell._action = ActionType::AT_NONE;
+                    if(canPass(type, cell._type)) seg = true;
+                }
+                else
+                {
+                    if(cell._unit->_team != team)
+                    {
+                        cell._action = ActionType::AT_ENEMY;
+                    }
+                    else
+                    {
+                        cell._action = ActionType::AT_ALLY;
+                        seg = true;
+                    }
+                }
+            }
+            else
+            {
+                if(dist == 0 || cell.empty())
+                {
+                    if(canPass(type, cell._type))
+                    {
+                        cell._action = ActionType::AT_MOVE;
+                        seg = true;
+                    }
+                }
+                else
+                {
+                    if(cell._unit->_team != team)
+                    {
+                        cell._action = ActionType::AT_ENEMY;
+                    }
+                    else
+                    {
+                        cell._action = ActionType::AT_ALLY;
+                        seg = true;
+                    }
+                }
+            }   
+        }
+    }
+
+    if(seg)
+    {
+        if(current.x < int(_WCells-1)) bfs_i(current + Coord(1, 0), dist+1, team, range, maxRange, type);
+        if(current.x > 0) bfs_i(current + Coord(-1, 0), dist+1, team, range, maxRange, type);
+        if(current.y < int(_HCells-1)) bfs_i(current + Coord(0, 1), dist+1, team, range, maxRange, type);
+        if(current.y > 0) bfs_i(current + Coord(0, -1), dist+1, team, range, maxRange, type);
+    }
+}
+
+*/

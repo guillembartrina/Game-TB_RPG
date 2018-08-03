@@ -92,7 +92,9 @@ private:
 
     void bfs(const Coord& origin, unsigned int team, const std::set<int>& range, MovementType type);
 
-    bool canPass(MovementType mType, TerrainType tType);
+    std::pair<bool, int> canPass(MovementType mType, TerrainType tType);
+
+    //void bfs_i(const Coord& current, unsigned int dist, unsigned int team, const std::set<int>& range, unsigned int maxRange, MovementType type);
 };
 
 #endif
