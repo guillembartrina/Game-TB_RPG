@@ -12,7 +12,7 @@ class Scene_Play : public Scene
 {
 public:
 
-    Scene_Play(SceneHandler& sceneHandler, Resources& resources, const MapData& mapData, const std::vector<std::list<UnitData>>& unitsData);
+    Scene_Play(SceneHandler& sceneHandler, Resources& resources, MapData* mapData, std::vector<std::list<UnitData>>* unitsData);
     ~Scene_Play();
 
     void init();
@@ -27,17 +27,17 @@ public:
 
     void resume();
 
+    bool correctCoord(const Coord& coord);
+
 private:
 
     sf::Text t_title;
 
     MapData _mapData;
     Map _map;
-
     sf::Vector2i _mapSize;
 
     std::vector<std::list<UnitData>> _unitsData;
-
     std::vector<std::vector<Unit>> _teams;
 
     Coord _pointer;

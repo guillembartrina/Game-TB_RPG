@@ -61,7 +61,7 @@ enum TerrainAttribute
 
 enum ActionType
 {
-    AT_MOVE,
+    AT_MOVE = 0,
     AT_ENEMY,
     AT_ALLY,
     AT_NONE

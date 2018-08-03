@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <queue>
 
 #include "SFML/System.hpp"
 #include "SFML/Graphics.hpp"
@@ -28,7 +29,6 @@ struct Cell
     Coord _position;
     TerrainType _type;
 
-    bool _empty;
     Unit* _unit;
 
     //BFS
@@ -36,11 +36,9 @@ struct Cell
     unsigned int _distance;
 
     ActionType _action;
-    sf::RectangleShape rs_action;
-
-    //PointerType _pointer;
 
     sf::RectangleShape rs_shape;
+    sf::RectangleShape rs_action;
 
     Cell();
     Cell(Coord position, TerrainType type);
@@ -60,14 +58,16 @@ public:
 
     void setPointer(const Coord& coord);
 
-    bool existCell(const Coord& coord);
     Cell& getCell(const Coord& coord);
 
     void selectCell(const Coord& coord);
+    void eraseSelection();
 
     void update(const sf::Time deltatime);
 
     void draw(sf::RenderWindow& window) const;
+
+    bool correctCoord(const Coord& coord);
 
 private:
 
@@ -80,6 +80,7 @@ private:
     sf::RectangleShape rs_background;
 
     bool _mapLoaded;
+    bool _pendingUpdate;
 
     std::vector<std::vector<Cell>> _map;
 
@@ -89,9 +90,9 @@ private:
     bool _printSelector;
     sf::RectangleShape rs_selector;
 
-    //void bfs(unsigned int team, const std::set<int>& range, int maxRange, MovementType type, const Coord& currentCell, int currentDistance);
+    void bfs(const Coord& origin, unsigned int team, const std::set<int>& range, MovementType type);
 
-    bool canPassUnitTerrain(MovementType mType, TerrainType tType);
+    bool canPass(MovementType mType, TerrainType tType);
 };
 
 #endif

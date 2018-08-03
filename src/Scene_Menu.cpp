@@ -26,6 +26,8 @@ void Scene_Menu::init()
     t_exit.setPosition(250, 500);
 
     currentOption = 0;
+
+    _database.load(_resources);
 }
 
 void Scene_Menu::handleEvents(const sf::Event& event)

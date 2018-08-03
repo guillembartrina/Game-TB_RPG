@@ -18,6 +18,8 @@ public:
     Database();
     ~Database();
 
+    void load(Resources& resources);
+
     void loadWeapons();
     void loadUnits(Resources& resources);
     void loadMaps(Resources& resources);

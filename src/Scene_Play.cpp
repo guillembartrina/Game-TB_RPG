@@ -1,7 +1,7 @@
 
 #include "Scene_Play.hpp"
 
-Scene_Play::Scene_Play(SceneHandler& sceneHandler, Resources& resources, const MapData& mapData, const std::vector<std::list<UnitData>>& unitsData) : Scene(sceneHandler, resources), _mapData(mapData), _unitsData(unitsData) {}
+Scene_Play::Scene_Play(SceneHandler& sceneHandler, Resources& resources, MapData* mapData, std::vector<std::list<UnitData>>* unitsData) : Scene(sceneHandler, resources), _mapData(*mapData), _unitsData(*unitsData) {}
 
 Scene_Play::~Scene_Play() {}
 
@@ -29,7 +29,8 @@ void Scene_Play::init()
         std::list<UnitData>::iterator it = _unitsData[i].begin();
         while(it != _unitsData[i].end())
         {
-            _teams[i][j].init(*it, i, _mapData._teams[i][j]);
+            if(correctCoord(_mapData._teams[i][j])) _teams[i][j].init(*it, i, _mapData._teams[i][j]);
+            else std::cerr << "ERROR: Bad <" << it->_name << "> unit position coord" << std::endl;
             ++j;
             ++it;
         }
@@ -93,11 +94,19 @@ void Scene_Play::handleEvents(const sf::Event& event)
                     break;
                 case sf::Keyboard::Space:
                 {
-                    if(!_selected && !_map.getCell(_pointer).empty() && _map.getCell(_pointer)._unit->_team == _currentTeam)
+                    if(!_map.getCell(_pointer).empty() && _map.getCell(_pointer)._unit->_team == _currentTeam)
                     {
-                        _map.selectCell(_pointer);
-                        _selector = _pointer;
-                        _selected = true;
+                        if(!_selected)
+                        {
+                            _map.selectCell(_pointer);
+                            _selector = _pointer;
+                            _selected = true;
+                        }
+                        else
+                        {
+                            _map.eraseSelection();
+                            _selected = false;
+                        }
                     }
                 }
                     break;
@@ -114,6 +123,8 @@ void Scene_Play::handleEvents(const sf::Event& event)
 void Scene_Play::update(const sf::Time deltatime)
 {
     _map.update(deltatime);
+
+    t_title.setString(std::to_string(_map.getCell(_pointer)._checked) + " " + std::to_string(_map.getCell(_pointer)._distance) + " " + std::to_string(_map.getCell(_pointer)._action));
 }
 
 void Scene_Play::draw(sf::RenderWindow& window) const
@@ -126,3 +137,10 @@ void Scene_Play::draw(sf::RenderWindow& window) const
 void Scene_Play::pause() {}
 
 void Scene_Play::resume() {}
+
+bool Scene_Play::correctCoord(const Coord& coord)
+{
+    if(coord.x >= 0 && coord.x < int(_mapSize.x) && coord.y >= 0 && coord.y < int(_mapSize.y)) return true;
+
+    return false;
+}

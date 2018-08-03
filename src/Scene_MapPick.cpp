@@ -36,7 +36,7 @@ void Scene_MapPick::handleEvents(const sf::Event& event)
                 {
                     if(_mapList.allPicked())
                     {
-                        _sceneHandler.addScene(std::unique_ptr<Scene>(new Scene_UnitsPick(_sceneHandler, _resources, _database, _database.getMaps().at(_mapList.getPicked().front()->_id))));
+                        _sceneHandler.addScene(std::unique_ptr<Scene>(new Scene_UnitsPick(_sceneHandler, _resources, _database, &_database.getMaps().at(_mapList.getPicked().front()->_id))));
                     }
                 }
                     break;
@@ -88,8 +88,6 @@ void Scene_MapPick::resume() {}
 
 void Scene_MapPick::loadMapsToList()
 {
-    _database.loadMaps(_resources);
-
     std::vector<MapData>::iterator it = _database.getMaps().begin();
 
     while(it != _database.getMaps().end())
@@ -102,6 +100,15 @@ void Scene_MapPick::loadMapsToList()
 
         text.setString("Name: " + it->_name);
         tmp.addText(sf::Vector2f(6, -6), text);
+
+        text.setString("Teams: " + std::to_string(it->_teams.size()));
+        tmp.addText(sf::Vector2f(6, 4), text);
+
+        for(unsigned int i = 0; i < it->_teams.size(); ++i)
+        {
+            text.setString(" - Team<" + std::to_string(i+1) +  ">: " + std::to_string(it->_teams[i].size()));
+            tmp.addText(sf::Vector2f(6, 4 + 10*(i+1)), text);
+        }
 
         tmp.addSprite(sf::Vector2f(115, 20), it->_preview);
 

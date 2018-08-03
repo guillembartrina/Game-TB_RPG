@@ -1,7 +1,7 @@
 
 #include "Scene_UnitsPick.hpp"
 
-Scene_UnitsPick::Scene_UnitsPick(SceneHandler& sceneHandler, Resources& resources, Database& database, MapData mapData) : Scene(sceneHandler, resources), _database(database), _mapData(mapData) {}
+Scene_UnitsPick::Scene_UnitsPick(SceneHandler& sceneHandler, Resources& resources, Database& database, MapData* mapData) : Scene(sceneHandler, resources), _database(database), _mapData(mapData) {}
 
 Scene_UnitsPick::~Scene_UnitsPick() {}
 
@@ -19,12 +19,12 @@ void Scene_UnitsPick::init()
     t_info.setFillColor(sf::Color::White);
     t_info.setPosition(50, 100);
 
-    int numTeams = _mapData._teams.size();
+    int numTeams = _mapData->_teams.size();
     _unitsLists = std::vector<List>(numTeams);
 
     int listW = 800/numTeams;
 
-    for(int i = 0; i < numTeams; ++i) _unitsLists[i] = List(sf::FloatRect(10 + i*listW, 170, listW-20, 600), 4, _mapData._teams[i].size());
+    for(int i = 0; i < numTeams; ++i) _unitsLists[i] = List(sf::FloatRect(10 + i*listW, 170, listW-20, 600), 4, _mapData->_teams[i].size());
 
     _currentTeam = 0;
 
@@ -45,9 +45,9 @@ void Scene_UnitsPick::handleEvents(const sf::Event& event)
                     {
                         if(_currentTeam == _unitsLists.size()-1)
                         {
-                            int size = _unitsLists.size();
-                            std::vector<std::list<UnitData>> teams(size);
-                            for(int i = 0; i < size; ++i)
+                            int numTeams = _mapData->_teams.size();
+                            std::vector<std::list<UnitData>> teams(numTeams);
+                            for(int i = 0; i < numTeams; ++i)
                             {
                                 std::list<std::list<Item>::iterator>::iterator it = _unitsLists[i].getPicked().begin();
                                 while(it != _unitsLists[i].getPicked().end())
@@ -57,7 +57,7 @@ void Scene_UnitsPick::handleEvents(const sf::Event& event)
                                 }
                             }
 
-                            _sceneHandler.addScene(std::unique_ptr<Scene>(new Scene_Play(_sceneHandler, _resources, _mapData, teams)));
+                            _sceneHandler.addScene(std::unique_ptr<Scene>(new Scene_Play(_sceneHandler, _resources, _mapData, &teams)));
                         }
                         else
                         {
@@ -114,8 +114,6 @@ void Scene_UnitsPick::resume() {}
 
 void Scene_UnitsPick::loadUnitsToLists()
 {
-    _database.loadUnits(_resources);
-
     std::vector<UnitData>::iterator it = _database.getUnits().begin();
 
     while(it != _database.getUnits().end())

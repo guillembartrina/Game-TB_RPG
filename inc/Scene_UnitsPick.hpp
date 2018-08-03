@@ -11,7 +11,7 @@ class Scene_UnitsPick : public Scene
 {
 public:
 
-    Scene_UnitsPick(SceneHandler& sceneHandler, Resources& resources, Database& database, MapData mapData);
+    Scene_UnitsPick(SceneHandler& sceneHandler, Resources& resources, Database& database, MapData* mapData);
     ~Scene_UnitsPick();
 
     void init();
@@ -35,7 +35,7 @@ private:
 
     Database& _database;
 
-    MapData _mapData;
+    MapData* _mapData;
 
     unsigned int _currentTeam;
 

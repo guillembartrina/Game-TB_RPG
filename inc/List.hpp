@@ -2,7 +2,6 @@
 #define LIST_HPP
 
 #include <list>
-#include <assert.h>
 
 #include "SFML/System.hpp"
 #include "SFML/Graphics.hpp"
@@ -71,9 +70,9 @@ private:
 
     sf::Color c_rectOutline;
     sf::Color c_element;
+    sf::Color c_elementOutline;
     sf::Color c_pickedElement;
     sf::Color c_pickerOutline;
-    sf::Color c_elementOutline;
 
     bool _active;
 

@@ -9,6 +9,12 @@ Database::Database()
 
 Database::~Database() {}
 
+void Database::load(Resources& resources)
+{
+    loadUnits(resources);
+    loadMaps(resources);
+}
+
 void Database::loadWeapons()
 {
     if(_weaponsLoaded) return;
@@ -135,7 +141,7 @@ void Database::loadUnits(Resources& resources)
 
         for(int j = 0; j < tmp; ++j)
         {
-            _units[i]._movementRange.insert(_units[i]._movementRange.end(), data["Units"][i]["movement"]["movementType"][j].as_int());
+            _units[i]._movementRange.insert(_units[i]._movementRange.end(), data["Units"][i]["movement"]["movementRange"][j].as_int());
         }
 
         if(data["Units"][i]["movement"]["specialMovement"].as_bool())

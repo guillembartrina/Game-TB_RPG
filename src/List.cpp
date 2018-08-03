@@ -5,26 +5,16 @@ Item::Item() {}
 void Item::addText(sf::Vector2f coord, sf::Text text)
 {
     _texts.insert(_texts.end(), std::make_pair(coord, text));
-
-        //if(_texts.back().first.x + _texts.back().second.getLocalBounds().width > maxW) std::cerr << "Out bounds list item <" << _id << ">" << std::endl;
-        //if(_texts.back().first.y + _texts.back().second.getLocalBounds().height > maxH) std::cerr << "Out bounds list item <" << _id << ">" << std::endl;
 }
 
 void Item::addSprite(sf::Vector2f coord, sf::Sprite sprite)
 {
     _sprites.insert(_sprites.end(), std::make_pair(coord, sprite));
-
-    //if(_sprites.back().first.x + _sprites.back().second.getLocalBounds().width > maxW) std::cerr << "Out bounds list item <" << _id << ">" << std::endl;
-    //if(_sprites.back().first.y + _sprites.back().second.getLocalBounds().height > maxH) std::cerr << "Out bounds list item <" << _id << ">" << std::endl;
 }
 
 void Item::addAnimatedSprite(sf::Vector2f coord, AnimatedSprite animatedSprite, std::string animationName)
 {
     std::list<std::pair<sf::Vector2f, AnimatedSprite>>::iterator it = _animatedSprites.insert(_animatedSprites.end(), std::make_pair(coord, animatedSprite));
-
-    //if(_animatedSprites.back().first.x + _animatedSprites.back().second.getLocalBounds().width > maxW) std::cerr << "Out bounds list item <" << _id << ">" << std::endl;
-    //if(_animatedSprites.back().first.y + _animatedSprites.back().second.getLocalBounds().height > maxH) std::cerr << "Out bounds list item <" << _id << ">" << std::endl;
-
     it->second.setActiveAnimation(animationName);
 }
 
@@ -43,8 +33,6 @@ List::List(sf::FloatRect listRect, int numPageElements, unsigned int numPickable
     _numPageElements = numPageElements;
     _pickableItems = (numPickableItems != 0);
     _numPickableItems = numPickableItems;
-
-    assert(numPageElements > 0 && "ERROR: List page elements is 0");
 
     _active = false;
 

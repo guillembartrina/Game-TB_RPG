@@ -39,6 +39,8 @@ Map::Map(sf::FloatRect mapRect)
 
     _printPointer = false;
     _printSelector = false;
+
+    _pendingUpdate = false;
 }
 
 Map::~Map() {}
@@ -97,21 +99,21 @@ void Map::setMap(Resources& resources, const MapData& map, std::vector<std::vect
     {
         for(unsigned int j = 0; j < teams[i].size(); ++j)
         {
-            if(existCell(teams[i][j]._position) && getCell(teams[i][j]._position).empty() && canPassUnitTerrain(teams[i][j]._movementType, getCell(teams[i][j]._position)._type))
+            if(getCell(teams[i][j]._position).empty() && canPass(teams[i][j]._movementType, getCell(teams[i][j]._position)._type))
             {
                 getCell(teams[i][j]._position)._unit = &teams[i][j];
+                getCell(teams[i][j]._position)._checked = false;
                 teams[i][j]._sprite.setScale(sf::Vector2f(_tileSize.x/64, _tileSize.y/64));
                 teams[i][j]._sprite.setActiveAnimation("idle");
                 teams[i][j]._sprite.stopAnimation();
             }
-            else
-            {
-                std::cerr << "Error casting unit, no spawn cell avaliabe, not movement type passable or non-empty cell" << std::endl;
-            }
+            else std::cerr << "ERROR: non empty or not passable cell for unit <" << teams[i][j]._name << ">" << std::endl;
         }
     }
 
     _mapLoaded = true;
+
+    _pendingUpdate = true;
 }
 
 void Map::setPointer(const Coord& coord)
@@ -122,13 +124,6 @@ void Map::setPointer(const Coord& coord)
     }
 }
 
-bool Map::existCell(const Coord& coord)
-{
-    if(coord.x >= 0 && coord.x < int(_WCells) && coord.y >= 0 && coord.y < int(_HCells)) return true;
-
-    return false;
-}
-
 Cell& Map::getCell(const Coord& coord)
 {
     return _map[coord.x][coord.y];
@@ -136,52 +131,64 @@ Cell& Map::getCell(const Coord& coord)
 
 void Map::selectCell(const Coord& coord)
 {
-    //Unit& current = *getCell(coord)._unit;
+    Unit& current = *getCell(coord)._unit;
 
     rs_selector.setPosition(_mapRect.left + coord.x*_tileSize.x, _mapRect.top + coord.y*_tileSize.y);
     _printSelector = true;
 
-    std::cerr << "Activ" << _printSelector;
+    if(!current._movementRange.empty()) bfs(current._position, current._team, current._movementRange, current._movementType);
 
     /*
-
-    if(!current._movementRange.empty())
-    {
-        std::set<int>::iterator it = current._movementRange.begin();
-        int maxRange = *it;
-        while(it != current._movementRange.end())
-        {
-            if(*it > maxRange) maxRange = *it;
-            ++it;
-        }
-        //bfs(unit._team, unit._movementRange, maxRange, unit._movementType, unit._position, 0);
-    }
 
     if(!current._specialMovement)
     {
         for(unsigned int i = 0; i < current._specialMovementCoords.size(); ++i)
         {
-            if(existCell(current._specialMovementCoords[i]) && getCell(current._specialMovementCoords[i])._empty)
+            if(correctCoord(current._specialMovementCoords[i]) && getCell(current._specialMovementCoords[i]).empty())
             {
                 //bfs(unit._team, {0}, 0, unit._movementType, unit._specialMovementCoords[i], 0);
             }
         }
     }
     */
+
+   _pendingUpdate = true;
+}
+
+void Map::eraseSelection()
+{
+    _printSelector = false;
+
+    for(unsigned int i = 0; i < _map.size(); ++i)
+    {
+        for(unsigned int j = 0; j < _map[0].size(); ++j)
+        {
+            _map[i][j]._checked = false;
+            _map[i][j]._distance = 0;
+            _map[i][j]._action = ActionType::AT_NONE;
+        }
+    }
+
+    _pendingUpdate = true;
 }
 
 void Map::update(const sf::Time deltatime)
 {
     if(_mapLoaded)
     {
-        for(unsigned int i = 0; i < _map.size(); ++i)
+        if(_pendingUpdate)
         {
-            for(unsigned int j = 0; j < _map[0].size(); ++j)
+            for(unsigned int i = 0; i < _map.size(); ++i)
             {
-                if(_map[i][j]._action != ActionType::AT_NONE) _map[i][j].rs_action.setTextureRect(sf::IntRect(_map[i][j]._action*32, 0, 32, 32));
+                for(unsigned int j = 0; j < _map[0].size(); ++j)
+                {
+                    if(_map[i][j]._action != ActionType::AT_NONE) _map[i][j].rs_action.setTextureRect(sf::IntRect(int(_map[i][j]._action)*32, 0, 32, 32));
 
-                if(!_map[i][j].empty()) _map[i][j]._unit->_sprite.setPosition(_mapRect.left + i*_tileSize.x, _mapRect.top + j*_tileSize.y);
+                    if(!_map[i][j].empty()) _map[i][j]._unit->_sprite.setPosition(_mapRect.left + i*_tileSize.x, _mapRect.top + j*_tileSize.y);
+                }
             }
+
+            _pendingUpdate = false;
         }
     }
 }
@@ -211,7 +218,124 @@ void Map::draw(sf::RenderWindow& window) const
     }
 }
 
-bool Map::canPassUnitTerrain(MovementType movementType, TerrainType terrainType)
+bool Map::correctCoord(const Coord& coord)
+{
+    if(coord.x >= 0 && coord.x < int(_WCells) && coord.y >= 0 && coord.y < int(_HCells)) return true;
+
+    return false;
+}
+
+void Map::bfs(const Coord& origin, unsigned int team, const std::set<int>& range, MovementType type)
+{
+
+    std::set<int>::iterator it = range.begin();
+
+    int maxRange = *it;
+    while(it != range.end())
+    {
+        if(*it > maxRange) maxRange = *it;
+        ++it;
+    }
+
+    std::queue<Coord> q;
+    q.push(origin);
+
+    int count1 = 1, count2 = 0;
+    int dist = 0;
+
+    while(!q.empty())
+    {
+        Coord current = q.front();
+        q.pop();
+        Cell& cell = getCell(current);
+
+        --count1;
+
+        bool seg = false;
+
+        if(!cell._checked)
+        {
+            cell._distance = dist;
+
+            if(dist > maxRange)
+            {
+                if(!cell.empty())
+                {
+                    if(cell._unit->_team != team) cell._action = ActionType::AT_ENEMY;
+                    else cell._action = ActionType::AT_ALLY;
+                }
+            }
+            else
+            {
+                std::cerr << ":" << dist << "::" << (range.find(dist) == range.end()) << std::endl;
+                if(range.find(dist) == range.end())
+                {
+                    if(cell.empty())
+                    {
+                        cell._action = ActionType::AT_NONE;
+                        if(canPass(type, cell._type)) seg = true;
+                    }
+                    else
+                    {
+                        if(cell._unit->_team != team)
+                        {
+                            cell._action = ActionType::AT_ENEMY;
+                        }
+                        else
+                        {
+                            cell._action = ActionType::AT_ALLY;
+                            seg = true;
+                        }
+                    }
+                }
+                else
+                {
+                    if(dist == 0 || cell.empty())
+                    {
+                        if(canPass(type, cell._type))
+                        {
+                            cell._action = ActionType::AT_MOVE;
+                            seg = true;
+                        }
+                    }
+                    else
+                    {
+                        if(cell._unit->_team != team)
+                        {
+                            cell._action = ActionType::AT_ENEMY;
+                        }
+                        else
+                        {
+                            cell._action = ActionType::AT_ALLY;
+                            seg = true;
+                        }
+                    }
+                }
+
+                
+            }
+
+            if(seg)
+            {
+                if(current.x < int(_WCells-1)) { q.push(current + Coord(1, 0)); ++count2; }
+                if(current.x > 0) { q.push(current + Coord(-1, 0)); ++count2; }
+                if(current.y < int(_HCells-1)) { q.push(current + Coord(0, 1)); ++count2; }
+                if(current.y > 0) { q.push(current + Coord(0, -1)); ++count2; }
+            }
+            
+            cell._checked = true;
+        }
+
+        if(count1 == 0)
+        {
+            ++dist;
+            count1 = count2;
+            count2 = 0;
+        }
+    }
+}
+
+bool Map::canPass(MovementType movementType, TerrainType terrainType)
 {
     bool pass = true;
 
