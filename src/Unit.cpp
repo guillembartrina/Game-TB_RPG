@@ -13,37 +13,41 @@ Unit::Unit()
 
 Unit::~Unit()
 {
-    std::list<AttrBase*>::iterator it = _otherBaseAttributes.begin();
-    while(it != _otherBaseAttributes.end())
+    std::map<OtherUnitAttribute, AttrBase*>::iterator it = _base._otherAttributes.begin();
+    while(it != _base._otherAttributes.end())
     {
-        delete *it;
+        delete it->second;
         ++it;
     }
 
     it = _otherAttributes.begin();
     while(it != _otherAttributes.end())
     {
-        delete *it;
+        delete it->second;
         ++it;
     }
 }
 
 void Unit::init(const UnitData& unitData, int team, const Coord& position)
 {
-    _name = unitData._name;
-    _weapon = unitData._weapon;
-    _movementType = unitData._movementType;
-    _movementRange = unitData._movementRange;
-    _specialMovement = unitData._specialMovement;
-    _specialMovementCoords = unitData._specialMovementCoords;
-    _baseAttributes = unitData._baseAttributes;
-    _otherBaseAttributes = unitData._otherBaseAttributes;
-    _sprite = unitData._sprite;
+    _base = unitData;
 
     _team = team;
     _alive = true;
+    _active = false;
     _position = position;
     _pendingUpdate = false;
     _dazed = false;
     _fixed = false;
+
+    update();
+}
+
+void Unit::update()
+{
+    _movementType = _base._movementType;
+    _movementRange = _base._movementRange;
+    _specialMovementRange = _base._specialMovementRange;
+    _attributes = _base._attributes;
+    _otherAttributes = _base._otherAttributes;
 }

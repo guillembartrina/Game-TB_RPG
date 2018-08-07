@@ -99,15 +99,17 @@ void Map::setMap(Resources& resources, const MapData& map, std::vector<std::vect
     {
         for(unsigned int j = 0; j < teams[i].size(); ++j)
         {
-            if(getCell(teams[i][j]._position).empty() && canPass(teams[i][j]._movementType, getCell(teams[i][j]._position)._type).first)
+            Coord pos = teams[i][j]._position;
+            if(_map[pos.x][pos.y].empty() && terrainPass(teams[i][j]._base._movementType, _map[pos.x][pos.y]._type).first)
             {
-                getCell(teams[i][j]._position)._unit = &teams[i][j];
-                getCell(teams[i][j]._position)._checked = false;
-                teams[i][j]._sprite.setScale(sf::Vector2f(_tileSize.x/64, _tileSize.y/64));
-                teams[i][j]._sprite.setActiveAnimation("idle");
-                teams[i][j]._sprite.stopAnimation();
+                _map[pos.x][pos.y]._unit = &teams[i][j];
+                _map[pos.x][pos.y]._checked = false;
+                teams[i][j]._base._sprite.setScale(sf::Vector2f(_tileSize.x/64, _tileSize.y/64));
+                teams[i][j]._base._sprite.setPosition(_mapRect.left + pos.x*_tileSize.x, _mapRect.top + pos.y*_tileSize.y);
+                teams[i][j]._base._sprite.setActiveAnimation("idle");
+                teams[i][j]._base._sprite.stopAnimation();
             }
-            else std::cerr << "ERROR: non empty or not passable cell for unit <" << teams[i][j]._name << ">" << std::endl;
+            else std::cerr << "ERROR: non empty or not passable cell for unit <" << teams[i][j]._base._name << ">" << std::endl;
         }
     }
 
@@ -129,28 +131,22 @@ Cell& Map::getCell(const Coord& coord)
     return _map[coord.x][coord.y];
 }
 
-void Map::selectCell(const Coord& coord)
+void Map::selectCell(const Coord& coord, bool movement)
 {
-    Unit& current = *getCell(coord)._unit;
+    Unit& current = *_map[coord.x][coord.y]._unit;
 
     rs_selector.setPosition(_mapRect.left + coord.x*_tileSize.x, _mapRect.top + coord.y*_tileSize.y);
     _printSelector = true;
 
-    if(!current._movementRange.empty()) bfs(current._position, current._team, current._movementRange, current._movementType);
-
-    /*
-
-    if(!current._specialMovement)
+    if(movement)
     {
-        for(unsigned int i = 0; i < current._specialMovementCoords.size(); ++i)
-        {
-            if(correctCoord(current._specialMovementCoords[i]) && getCell(current._specialMovementCoords[i]).empty())
-            {
-                //bfs(unit._team, {0}, 0, unit._movementType, unit._specialMovementCoords[i], 0);
-            }
-        }
+        bfsMovement(current._position, current._team, current._movementType, current._movementRange, current._specialMovementRange);
+        //bfs(current._position, current._team, current._movementType, current._movementRange);
     }
-    */
+    else
+    {
+        bfsAction(current._position, current._team, current._base._weapon._tarjetsEnemy, current._base._weapon._tarjetsAlly, current._base._weapon._range, current._base._weapon._specialRange);
+    }
 
    _pendingUpdate = true;
 }
@@ -172,6 +168,24 @@ void Map::eraseSelection()
     _pendingUpdate = true;
 }
 
+bool Map::correctCoord(const Coord& coord)
+{
+    if(coord.x >= 0 && coord.x < int(_WCells) && coord.y >= 0 && coord.y < int(_HCells)) return true;
+
+    return false;
+}
+
+void Map::moveUnit(Unit* unit, const Coord& coord)
+{
+    if(correctCoord(coord) && _map[coord.x][coord.y].empty())
+    {
+        _map[unit->_position.x][unit->_position.y]._unit = nullptr;
+        _map[coord.x][coord.y]._unit = unit;
+        
+        unit->_base._sprite.setPosition(_mapRect.left + coord.x*_tileSize.x, _mapRect.top + coord.y*_tileSize.y);
+    }
+}
+
 void Map::update(const sf::Time deltatime)
 {
     if(_mapLoaded)
@@ -183,8 +197,6 @@ void Map::update(const sf::Time deltatime)
                 for(unsigned int j = 0; j < _map[0].size(); ++j)
                 {
                     if(_map[i][j]._action != ActionType::AT_NONE) _map[i][j].rs_action.setTextureRect(sf::IntRect(int(_map[i][j]._action)*32, 0, 32, 32));
-
-                    if(!_map[i][j].empty()) _map[i][j]._unit->_sprite.setPosition(_mapRect.left + i*_tileSize.x, _mapRect.top + j*_tileSize.y);
                 }
             }
 
@@ -208,7 +220,7 @@ void Map::draw(sf::RenderWindow& window) const
                 if(_map[i][j]._action != ActionType::AT_NONE) window.draw(_map[i][j].rs_action);
                 if(!_map[i][j].empty()) 
                 {
-                    window.draw(_map[i][j]._unit->_sprite);
+                    window.draw(_map[i][j]._unit->_base._sprite);
                 }
             }
         }
@@ -218,16 +230,188 @@ void Map::draw(sf::RenderWindow& window) const
     }
 }
 
-bool Map::correctCoord(const Coord& coord)
+void Map::bfsMovement(const Coord& origin, unsigned int team, MovementType type, const std::set<int>& range, const std::vector<Coord>& specialRange)
 {
-    if(coord.x >= 0 && coord.x < int(_WCells) && coord.y >= 0 && coord.y < int(_HCells)) return true;
+    if(!range.empty())
+    {
+        std::set<int>::iterator it = range.begin();
+        int maxRange = *it;
+        while(it != range.end())
+        {
+            if(*it > maxRange) maxRange = *it;
+            ++it;
+        }
 
-    return false;
+        std::queue<std::pair<Coord, int>> q;
+        q.push(std::make_pair(origin, 0));
+
+        int count1 = 1, count2 = 0;
+        int dist = 0;
+
+        while(!q.empty())
+        {
+            std::pair<Coord, int> current = q.front();
+            q.pop();
+            Cell& cell = getCell(current.first);
+
+            --count1;
+
+            bool seg = false;
+            int mod = 0;
+
+            if(!cell._checked)
+            {
+                cell._distance = dist + current.second;
+
+                if(cell._distance <= unsigned(maxRange))
+                {
+                    std::pair<bool, int> res = terrainPass(type, cell._type);
+
+                    if(res.first)
+                    {
+                        if(cell.empty() || cell._unit->_team == team)
+                        {
+                            seg = true;
+                            mod = res.second;
+
+                            if(range.find(cell._distance) != range.end()) cell._action = ActionType::AT_MOVE;
+                        }
+                    } 
+                }
+
+                if(seg)
+                {
+                    if(current.first.x < int(_WCells-1)) { q.push(std::make_pair(current.first + Coord(1, 0), mod)); ++count2; }
+                    if(current.first.x > 0) { q.push(std::make_pair(current.first + Coord(-1, 0), mod)); ++count2; }
+                    if(current.first.y < int(_HCells-1)) { q.push(std::make_pair(current.first + Coord(0, 1), mod)); ++count2; }
+                    if(current.first.y > 0) { q.push(std::make_pair(current.first + Coord(0, -1), mod)); ++count2; }
+                }
+                
+                cell._checked = true;
+            }
+
+            if(count1 == 0)
+            {
+                ++dist;
+                count1 = count2;
+                count2 = 0;
+            }
+        }
+    }
+
+    for(unsigned int i = 0; i < specialRange.size(); ++i)
+    {
+        Coord pos = specialRange[i];
+        if(correctCoord(pos) && _map[pos.x][pos.y].empty())
+        {
+            _map[pos.x][pos.y]._action = ActionType::AT_MOVE;
+        }
+    }
 }
 
-void Map::bfs(const Coord& origin, unsigned int team, const std::set<int>& range, MovementType type)
+void Map::bfsAction(const Coord& origin, unsigned int team, bool tarjetEnemy, bool tarjetAlly, const std::set<int>& range, const std::vector<Coord>& specialRange)
 {
+    if(!range.empty())
+    {
+        std::set<int>::iterator it = range.begin();
+        int maxRange = *it;
+        while(it != range.end())
+        {
+            if(*it > maxRange) maxRange = *it;
+            ++it;
+        }
 
+        std::queue<Coord> q;
+        q.push(origin);
+
+        int count1 = 1, count2 = 0;
+        int dist = 0;
+
+        while(!q.empty())
+        {
+            Coord current = q.front();
+            Cell& cell = getCell(current);
+            q.pop();
+
+            --count1;
+
+            bool seg = false;
+
+            if(!cell._checked)
+            {
+                cell._distance = dist;
+
+                if(cell._distance <= unsigned(maxRange))
+                {
+                    seg = true;
+                    if(!cell.empty())
+                    {
+                        if(tarjetEnemy && cell._unit->_team != team) cell._action = ActionType::AT_ENEMY;
+                        if(tarjetAlly && cell._unit->_team == team) cell._action = ActionType::AT_ALLY;
+                    }
+                }
+
+                if(seg)
+                {
+                    if(unsigned(current.x) < _WCells-1) { q.push(current + Coord(1, 0)); ++count2; }
+                    if(current.x > 0) { q.push(current + Coord(-1, 0)); ++count2; }
+                    if(unsigned(current.y) < _HCells-1) { q.push(current + Coord(0, 1)); ++count2; }
+                    if(current.y > 0) { q.push(current + Coord(0, -1)); ++count2; }
+                }
+                
+                cell._checked = true;
+            }
+
+            if(count1 == 0)
+            {
+                ++dist;
+                count1 = count2;
+                count2 = 0;
+            }
+        }
+    }
+
+    for(unsigned int i = 0; i < specialRange.size(); ++i)
+    {
+        Coord pos = specialRange[i];
+        if(correctCoord(pos) && _map[pos.x][pos.y].empty())
+        {
+            _map[pos.x][pos.y]._action = ActionType::AT_MOVE;
+        }
+    }
+}
+
+
+std::pair<bool, int> Map::terrainPass(MovementType movementType, TerrainType terrainType)
+{
+    bool pass = true;
+    int mod = 0;
+
+    switch(terrainType)
+    {
+        case TerrainType::TT_WALL:
+            pass = false;
+            break;
+        case TerrainType::TT_WATER:
+            if(movementType == MovementType::MT_MOUNTED || movementType == MovementType::MT_WALKING) pass = false;
+            break;
+        case TerrainType::TT_FOREST:
+            if(movementType == MovementType::MT_MOUNTED) pass = false;
+            if(movementType == MovementType::MT_WALKING) mod = 1;
+            break;
+        case TerrainType::TT_MOUNTAIN:
+            if(movementType == MovementType::MT_MOUNTED || movementType == MovementType::MT_WALKING) pass = false;
+            break;
+        default:
+            break;
+    }
+
+    return std::make_pair(pass, mod);
+}
+
+/*
+void Map::bfs(const Coord& origin, unsigned int team, MovementType type, const std::set<int>& range)
+{
     std::set<int>::iterator it = range.begin();
 
     int maxRange = *it;
@@ -337,36 +521,8 @@ void Map::bfs(const Coord& origin, unsigned int team, const std::set<int>& range
         }
     }
 }
-
-std::pair<bool, int> Map::canPass(MovementType movementType, TerrainType terrainType)
-{
-    bool pass = true;
-    int mod = 0;
-
-    switch(terrainType)
-    {
-        case TerrainType::TT_WALL:
-            pass = false;
-            break;
-        case TerrainType::TT_WATER:
-            if(movementType == MovementType::MT_MOUNTED || movementType == MovementType::MT_WALKING) pass = false;
-            break;
-        case TerrainType::TT_FOREST:
-            if(movementType == MovementType::MT_MOUNTED) pass = false;
-            if(movementType == MovementType::MT_WALKING) mod = 1;
-            break;
-        case TerrainType::TT_MOUNTAIN:
-            if(movementType == MovementType::MT_MOUNTED || movementType == MovementType::MT_WALKING) pass = false;
-            break;
-        default:
-            break;
-    }
-
-    return std::make_pair(pass, mod);
-}
-
+*/
 /*
-
 void Map::bfs_i(const Coord& current, unsigned int dist, unsigned int team, const std::set<int>& range, unsigned int maxRange, MovementType type)
 {
     Cell& cell = getCell(current);
@@ -441,5 +597,4 @@ void Map::bfs_i(const Coord& current, unsigned int dist, unsigned int team, cons
         if(current.y > 0) bfs_i(current + Coord(0, -1), dist+1, team, range, maxRange, type);
     }
 }
-
 */

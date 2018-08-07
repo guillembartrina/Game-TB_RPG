@@ -20,11 +20,8 @@ public:
 
     WeaponType _type;
 
-    std::set<int> _range; //0-inf (0: itself)
-
-    bool _specialRange;
-
-    std::vector<Coord> _specialRangeCoords;
+    std::set<int> _range;
+    std::vector<Coord> _specialRange;
 
     bool _tarjetsEnemy;
     std::vector<int> _enemy;

@@ -17,7 +17,7 @@ struct UnitData
 {
     UnitData()
     {
-        _baseAttributes = std::vector<int>(UnitAttribute::UA_ELEMS);
+        _attributes = std::vector<int>(UnitAttribute::UA_ELEMS);
     }
 
     std::string _name;
@@ -28,11 +28,10 @@ struct UnitData
 
     MovementType _movementType;
     std::set<int> _movementRange;
-    bool _specialMovement;
-    std::vector<Coord> _specialMovementCoords;
+    std::vector<Coord> _specialMovementRange;
 
-    std::vector<int> _baseAttributes;
-    std::list<AttrBase*> _otherBaseAttributes;
+    std::vector<int> _attributes;
+    std::map<OtherUnitAttribute, AttrBase*> _otherAttributes;
 
     AnimatedSprite _sprite;
 };
@@ -45,37 +44,27 @@ public:
     ~Unit();
 
     void init(const UnitData& unitData, int team, const Coord& position);
-
-    std::string _name;
-
-    //std::set<WeaponType> _weaponCompatibility;
-    //std::vector<std::string> _byNameWeaponCompatibility;
-    Weapon _weapon;
-
-    MovementType _movementType;
-    std::set<int> _movementRange;
-    bool _specialMovement;
-    std::vector<Coord> _specialMovementCoords;
-
-    std::vector<int> _baseAttributes;
-    std::list<AttrBase*> _otherBaseAttributes;
-
-    AnimatedSprite _sprite;
-
-    /* IN GAME */
+    void update();
 
     unsigned int _team;
 
     bool _alive;
+    bool _active;
 
     Coord _position;
 
-    std::vector<int> _attributes;
-    std::list<AttrBase*> _otherAttributes;
-    bool _pendingUpdate;
-
     bool _dazed;
     bool _fixed;
+
+    MovementType _movementType;
+    std::set<int> _movementRange;
+    std::vector<Coord> _specialMovementRange;
+
+    std::vector<int> _attributes; //U
+    std::map<OtherUnitAttribute, AttrBase*> _otherAttributes; //U
+    bool _pendingUpdate;
+
+    UnitData _base;
 
     //Effects, abilities, states
 

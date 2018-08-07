@@ -28,6 +28,11 @@ public:
         return Coord(x * e, y * e);
     }
 
+    bool operator== (const Coord& c) const
+    {
+        return (x == c.x && y == c.y);
+    }
+
 };
 
 #endif

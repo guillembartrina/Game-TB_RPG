@@ -41,6 +41,8 @@ private:
     std::vector<UnitData> _units;
     std::vector<MapData> _maps;
 
+    sf::Color hsv(int hue, float sat, float val);
+
 };
 
 #endif

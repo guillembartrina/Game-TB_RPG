@@ -60,21 +60,27 @@ public:
 
     Cell& getCell(const Coord& coord);
 
-    void selectCell(const Coord& coord);
+    void selectCell(const Coord& coord, bool movement = true);
     void eraseSelection();
+
+    bool correctCoord(const Coord& coord);
+
+    void moveUnit(Unit* unit, const Coord& coord);
 
     void update(const sf::Time deltatime);
 
     void draw(sf::RenderWindow& window) const;
 
-    bool correctCoord(const Coord& coord);
+    unsigned int _WCells;
+    unsigned int _HCells;
+
+    Coord _pointer;
+    Coord _selector;
 
 private:
 
     sf::FloatRect _mapRect;
 
-    unsigned int _WCells;
-    unsigned int _HCells;
     sf::Vector2f _tileSize;
 
     sf::RectangleShape rs_background;
@@ -90,10 +96,12 @@ private:
     bool _printSelector;
     sf::RectangleShape rs_selector;
 
-    void bfs(const Coord& origin, unsigned int team, const std::set<int>& range, MovementType type);
+    void bfsMovement(const Coord& origin, unsigned int team, MovementType type, const std::set<int>& range, const std::vector<Coord>& specialRange);
+    void bfsAction(const Coord& origin, unsigned int team, bool tarjetEnemy, bool tarjetAlly, const std::set<int>& range, const std::vector<Coord>& specialRange);
 
-    std::pair<bool, int> canPass(MovementType mType, TerrainType tType);
+    std::pair<bool, int> terrainPass(MovementType mType, TerrainType tType);
 
+    //void bfs(const Coord& origin, unsigned int team, MovementType type, const std::set<int>& range);
     //void bfs_i(const Coord& current, unsigned int dist, unsigned int team, const std::set<int>& range, unsigned int maxRange, MovementType type);
 };
 

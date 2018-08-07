@@ -44,16 +44,13 @@ void Database::loadWeapons()
             _weapons[i]._range.insert(_weapons[i]._range.end(), data["Weapons"][i]["range"]["range"][j].as_int());
         }
 
-        _weapons[i]._specialRange = false;
-
         if(data["Weapons"][i]["range"]["specialRange"].as_bool())
         {
-            _weapons[i]._specialRange = true;
             tmp = data["Weapons"][i]["range"]["specialRangeCoords"].size();
 
             for(int j = 0; j < tmp; ++j)
             {
-                _weapons[i]._specialRangeCoords.insert(_weapons[i]._specialRangeCoords.end(), Coord(data["Weapons"][i]["range"]["specialRangeCoords"][j][0].as_int(), data["Weapons"][i]["range"]["specialRangeCoords"][j][1].as_int()));
+                _weapons[i]._specialRange.insert(_weapons[i]._specialRange.end(), Coord(data["Weapons"][i]["range"]["specialRangeCoords"][j][0].as_int(), data["Weapons"][i]["range"]["specialRangeCoords"][j][1].as_int()));
             }
         }
 
@@ -150,7 +147,7 @@ void Database::loadUnits(Resources& resources)
 
             for(int j = 0; j < tmp; ++j)
             {
-                _units[i]._specialMovementCoords.insert(_units[i]._specialMovementCoords.end(), Coord(data["Units"][i]["movement"]["specialMovementCoords"][j][0].as_int(), data["Units"][i]["movement"]["specialMovementCoords"][j][1].as_int()));
+                _units[i]._specialMovementRange.insert(_units[i]._specialMovementRange.end(), Coord(data["Units"][i]["movement"]["specialMovementCoords"][j][0].as_int(), data["Units"][i]["movement"]["specialMovementCoords"][j][1].as_int()));
             }
         }
         
@@ -158,7 +155,7 @@ void Database::loadUnits(Resources& resources)
 
         for(int j = 0; j < tmp; ++j)
         {
-            _units[i]._baseAttributes[j] = data["Units"][i]["baseAttributes"][j].as_int();
+            _units[i]._attributes[j] = data["Units"][i]["baseAttributes"][j].as_int();
         }
 
         _units[i]._sprite.addAnimation("idle", resources.Texture(data["Units"][i]["sprite"].as_string()), 8, sf::Vector2u(64, 64), sf::seconds(0.1f), true);
@@ -212,11 +209,13 @@ void Database::loadMaps(Resources& resources)
             {
                 TerrainType tt = _maps[i]._map[j][k];
 
+                sf::Color color = hsv(int(tt+60)*40, 0.9f, 0.9f);
+
                 for(int l = 0; l < 6; ++l)
                 {
                     for(int m = 0; m < 6; ++m)
                     {
-                        tmpI.setPixel((j*6)+l, (k*6)+m, sf::Color((tt%3)*100, (tt%6)*50, (tt%26)*10));
+                        tmpI.setPixel((j*6)+l, (k*6)+m, color);
                     }
                 }
             }
@@ -271,13 +270,13 @@ void Database::printWeapons()
             std::cerr << " " << *it1;
             ++it1;
         }
-        if(it->_specialRange)
+        if(!it->_specialRange.empty())
         {
             std::cerr << " > Special:";
         }
-        for(unsigned int i = 0; i < it->_specialRangeCoords.size(); ++i)
+        for(unsigned int i = 0; i < it->_specialRange.size(); ++i)
         {
-            std::cerr << " {" << it->_specialRangeCoords[i].x << ", " << it->_specialRangeCoords[i].y << "}";
+            std::cerr << " {" << it->_specialRange[i].x << ", " << it->_specialRange[i].y << "}";
         }
         std::cerr << std::endl;
         std::cerr << "Tarjets:";
@@ -337,11 +336,11 @@ void Database::printUnits()
             std::cerr << " " << *it3;
             ++it3;
         }
-        if(it->_specialMovement)
+        if(it->_specialMovementRange.size() > 0)
         {
             std::cerr << ", Special:";
-            std::vector<Coord>::iterator it4 = it->_specialMovementCoords.begin();
-            while(it4 != it->_specialMovementCoords.end())
+            std::vector<Coord>::iterator it4 = it->_specialMovementRange.begin();
+            while(it4 != it->_specialMovementRange.end())
             {
                 std::cerr << " {" << it4->x << "," << it4->y << "}";
                 ++it4;
@@ -349,8 +348,8 @@ void Database::printUnits()
         }
         std::cerr << std::endl;
         std::cerr << "Attributes:" << std::endl;
-        std::vector<int>::iterator it5 = it->_baseAttributes.begin();
-        while(it5 != it->_baseAttributes.end())
+        std::vector<int>::iterator it5 = it->_attributes.begin();
+        while(it5 != it->_attributes.end())
         {
             std::cerr << "    " << *it5 << std::endl;;
             ++it5;
@@ -384,5 +383,35 @@ void Database::printMaps()
         }
         std::cerr << "-------------------------------------" << std::endl;
         ++it;
+    }
+}
+
+sf::Color Database::hsv(int hue, float sat, float val)
+{
+    hue %= 360;
+    while(hue<0) hue += 360;
+
+    if(sat<0.f) sat = 0.f;
+    if(sat>1.f) sat = 1.f;
+
+    if(val<0.f) val = 0.f;
+    if(val>1.f) val = 1.f;
+
+    int h = hue/60;
+    float f = float(hue)/60-h;
+    float p = val*(1.f-sat);
+    float q = val*(1.f-sat*f);
+    float t = val*(1.f-sat*(1-f));
+
+    switch(h)
+    {
+        default:
+        case 0:
+        case 6: return sf::Color(val*255, t*255, p*255);
+        case 1: return sf::Color(q*255, val*255, p*255);
+        case 2: return sf::Color(p*255, val*255, t*255);
+        case 3: return sf::Color(p*255, q*255, val*255);
+        case 4: return sf::Color(t*255, p*255, val*255);
+        case 5: return sf::Color(val*255, p*255, q*255);
     }
 }

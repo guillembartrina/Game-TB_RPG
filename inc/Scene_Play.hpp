@@ -27,25 +27,28 @@ public:
 
     void resume();
 
-    bool correctCoord(const Coord& coord);
-
 private:
-
-    sf::Text t_title;
 
     MapData _mapData;
     Map _map;
-    sf::Vector2i _mapSize;
+    //sf::Vector2i _mapSize;
 
     std::vector<std::list<UnitData>> _unitsData;
     std::vector<std::vector<Unit>> _teams;
 
-    Coord _pointer;
-    bool _selected;
-    Coord _selector;
-
     unsigned int _currentTeam;
 
+    TurnPhase _currentTurnPhase;
+
+    bool _selected;
+    Unit* _currentUnit;
+
+    sf::Text t_title;
+
+    sf::RectangleShape rs_info;
+    sf::Text t_currentTeam;
+
+    void initPhase(unsigned int team);
 };
 
 #endif

@@ -39,6 +39,10 @@ enum UnitAttribute
     UA_ELEMS
 };
 
+enum OtherUnitAttribute
+{
+};
+
 enum TerrainType
 {
     TT_PLAINS,
@@ -61,7 +65,7 @@ enum TerrainAttribute
 
 enum ActionType
 {
-    AT_MOVE = 0,
+    AT_MOVE,
     AT_ENEMY,
     AT_ALLY,
     AT_NONE
@@ -69,8 +73,9 @@ enum ActionType
 
 enum TurnPhase
 {
-    TP_BEGIN,
-    TP_COMBAT
+    TP_SELECT,
+    TP_SELECTED,
+    TP_ACTION
 };
 
 enum TarjetTeam
