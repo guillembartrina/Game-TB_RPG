@@ -26,14 +26,16 @@ public:
 
 private:
 
-    sf::Text t_title;
+    /* DATA */
+    Database _database;
 
-    sf::Text t_play;
-    sf::Text t_exit;
-
+    /* VARS */
     int currentOption;
 
-    Database _database;
+    /* SFML */
+    sf::Text t_title;
+    sf::Text t_play;
+    sf::Text t_exit;
 };
 
 #endif

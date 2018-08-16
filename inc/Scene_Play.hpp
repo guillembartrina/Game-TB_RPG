@@ -8,6 +8,23 @@
 #include "Map.hpp"
 #include "Unit.hpp"
 
+enum DataUnit
+{
+    DU_NAME,
+    DU_TEAM,
+    DU_HP,
+    DU_RESIST_F,
+    DU_RESIST_M,
+    DU_WEAPON,
+    DU_WEAPON_RANGE,
+    DU_WEAPON_SPECIAL_RANGE,
+    DU_MOVEMENT,
+    DU_MOVEMENT_RANGE,
+    DU_MOVEMENT_SPECIAL_RANGE,
+    DU_GOD,
+    DU_ELEMS
+};
+
 class Scene_Play : public Scene
 {
 public:
@@ -29,26 +46,28 @@ public:
 
 private:
 
+    /* F */
+    void initPhase(unsigned int team);
+    void setDataUnit(const Unit& unit);
+
+    /* DATA */
     MapData _mapData;
     Map _map;
-    //sf::Vector2i _mapSize;
 
     std::vector<std::list<UnitData>> _unitsData;
     std::vector<std::vector<Unit>> _teams;
 
+    /* VARS */
     unsigned int _currentTeam;
-
     TurnPhase _currentTurnPhase;
-
     bool _selected;
     Unit* _currentUnit;
 
+    /* SFML */
     sf::Text t_title;
-
     sf::RectangleShape rs_info;
     sf::Text t_currentTeam;
-
-    void initPhase(unsigned int team);
+    std::vector<sf::Text> t_dataUnit;
 };
 
 #endif

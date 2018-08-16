@@ -32,7 +32,6 @@ public:
     {
         return (x == c.x && y == c.y);
     }
-
 };
 
 #endif

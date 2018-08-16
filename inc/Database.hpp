@@ -33,16 +33,18 @@ public:
 
 private:
 
-    bool _weaponsLoaded;
-    bool _unitsLoaded;
-    bool _mapsLoaded;
+    /* F */
+    sf::Color hsv(int hue, float sat, float val);
 
+    /* DATA */
     std::vector<Weapon> _weapons;
     std::vector<UnitData> _units;
     std::vector<MapData> _maps;
 
-    sf::Color hsv(int hue, float sat, float val);
-
+    /* VARS */
+    bool _weaponsLoaded;
+    bool _unitsLoaded;
+    bool _mapsLoaded;
 };
 
 #endif

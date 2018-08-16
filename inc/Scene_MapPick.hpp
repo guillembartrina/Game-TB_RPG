@@ -29,15 +29,17 @@ public:
 
 private:
 
-    sf::Text t_title;
-    sf::Text t_info;
+    /* F */
+    void loadMapsToList();
 
+    /* DATA */
     Database& _database;
     
     List _mapList;
 
-    void loadMapsToList();
-
+    /* SFML */
+    sf::Text t_title;
+    sf::Text t_info;
 };
 
 #endif

@@ -15,11 +15,6 @@
 
 struct UnitData
 {
-    UnitData()
-    {
-        _attributes = std::vector<int>(UnitAttribute::UA_ELEMS);
-    }
-
     std::string _name;
 
     std::set<WeaponType> _weaponCompatibility;
@@ -34,6 +29,8 @@ struct UnitData
     std::map<OtherUnitAttribute, AttrBase*> _otherAttributes;
 
     AnimatedSprite _sprite;
+
+    UnitData();
 };
 
 class Unit
@@ -46,8 +43,11 @@ public:
     void init(const UnitData& unitData, int team, const Coord& position);
     void update();
 
+    /* DATA */
     unsigned int _team;
+    UnitData _base;
 
+    /* VARS */
     bool _alive;
     bool _active;
 
@@ -55,6 +55,7 @@ public:
 
     bool _dazed;
     bool _fixed;
+    bool _god;
 
     MovementType _movementType;
     std::set<int> _movementRange;
@@ -62,12 +63,9 @@ public:
 
     std::vector<int> _attributes; //U
     std::map<OtherUnitAttribute, AttrBase*> _otherAttributes; //U
-    bool _pendingUpdate;
-
-    UnitData _base;
+    //bool _pendingUpdate;
 
     //Effects, abilities, states
-
 };
 
 #endif

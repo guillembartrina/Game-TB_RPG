@@ -141,21 +141,18 @@ void Database::loadUnits(Resources& resources)
             _units[i]._movementRange.insert(_units[i]._movementRange.end(), data["Units"][i]["movement"]["movementRange"][j].as_int());
         }
 
-        if(data["Units"][i]["movement"]["specialMovement"].as_bool())
-        {
-            tmp = data["Units"][i]["movement"]["specialMovementCoords"].size();
-
-            for(int j = 0; j < tmp; ++j)
-            {
-                _units[i]._specialMovementRange.insert(_units[i]._specialMovementRange.end(), Coord(data["Units"][i]["movement"]["specialMovementCoords"][j][0].as_int(), data["Units"][i]["movement"]["specialMovementCoords"][j][1].as_int()));
-            }
-        }
-        
-        tmp = data["Units"][i]["baseAttributes"].size();
+        tmp = data["Units"][i]["movement"]["specialMovementRange"].size();
 
         for(int j = 0; j < tmp; ++j)
         {
-            _units[i]._attributes[j] = data["Units"][i]["baseAttributes"][j].as_int();
+            _units[i]._specialMovementRange.insert(_units[i]._specialMovementRange.end(), Coord(data["Units"][i]["movement"]["specialMovementCoords"][j][0].as_int(), data["Units"][i]["movement"]["specialMovementCoords"][j][1].as_int()));
+        }
+        
+        tmp = data["Units"][i]["attributes"].size();
+
+        for(int j = 0; j < tmp; ++j)
+        {
+            _units[i]._attributes[j] = data["Units"][i]["attributes"][j].as_int();
         }
 
         _units[i]._sprite.addAnimation("idle", resources.Texture(data["Units"][i]["sprite"].as_string()), 8, sf::Vector2u(64, 64), sf::seconds(0.1f), true);

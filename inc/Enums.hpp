@@ -35,9 +35,10 @@ enum UnitAttribute
     UA_HP,
     UA_RESIST_F,
     UA_RESIST_M,
-    UA_GOD,
     UA_ELEMS
 };
+
+//std::vector<std::string> UA_Strings = {"HP", "RES(F)", "RES(M)"};
 
 enum OtherUnitAttribute
 {

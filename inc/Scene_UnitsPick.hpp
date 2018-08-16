@@ -28,19 +28,21 @@ public:
 
 private:
 
-    sf::Text t_title;
-    sf::Text t_info;
+    /* F */
+    void loadUnitsToLists();
+
+    /* DATA */
+    Database& _database;
+    MapData* _mapData;
 
     std::vector<List> _unitsLists;
 
-    Database& _database;
-
-    MapData* _mapData;
-
+    /* VARS */
     unsigned int _currentTeam;
 
-    void loadUnitsToLists();
-
+    /* SFML*/
+    sf::Text t_title;
+    sf::Text t_info;
 };
 
 #endif

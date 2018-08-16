@@ -1,14 +1,19 @@
 #include "Unit.hpp"
 
+UnitData::UnitData()
+{
+    _attributes = std::vector<int>(UnitAttribute::UA_ELEMS);
+}
+
 Unit::Unit()
 {
     _team = 0;
     _alive = false;
-    
-    _pendingUpdate = false;
-
+    _active = false;
+    //_pendingUpdate = false;
     _dazed = false;
     _fixed = false;
+    _god = false;
 }
 
 Unit::~Unit()
@@ -31,16 +36,16 @@ Unit::~Unit()
 void Unit::init(const UnitData& unitData, int team, const Coord& position)
 {
     _base = unitData;
-
     _team = team;
     _alive = true;
     _active = false;
     _position = position;
-    _pendingUpdate = false;
+    //_pendingUpdate = false;
     _dazed = false;
     _fixed = false;
+    _god = false;
 
-    update();
+    update(); //TO CHANGE
 }
 
 void Unit::update()

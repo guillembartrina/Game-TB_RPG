@@ -118,24 +118,30 @@ void Map::setMap(Resources& resources, const MapData& map, std::vector<std::vect
     _pendingUpdate = true;
 }
 
-void Map::setPointer(const Coord& coord)
-{
-    if(_mapLoaded)
-    {
-        rs_pointer.setPosition(_mapRect.left + coord.x * _tileSize.x, _mapRect.top + coord.y * _tileSize.y);
-    }
-}
-
 Cell& Map::getCell(const Coord& coord)
 {
     return _map[coord.x][coord.y];
+}
+
+Coord& Map::pointer()
+{
+    _updatePointer = true;
+
+    return _pointer;
+}
+
+Coord& Map::selector()
+{
+    _updateSelector = true;
+
+    return _selector;
 }
 
 void Map::selectCell(const Coord& coord, bool movement)
 {
     Unit& current = *_map[coord.x][coord.y]._unit;
 
-    rs_selector.setPosition(_mapRect.left + coord.x*_tileSize.x, _mapRect.top + coord.y*_tileSize.y);
+    selector() = coord;
     _printSelector = true;
 
     if(movement)
@@ -190,6 +196,18 @@ void Map::update(const sf::Time deltatime)
 {
     if(_mapLoaded)
     {
+        if(_updatePointer)
+        {
+            rs_pointer.setPosition(_mapRect.left + _pointer.x * _tileSize.x, _mapRect.top + _pointer.y * _tileSize.y);
+            _updatePointer = false;
+        }
+
+        if(_updateSelector)
+        {
+            rs_selector.setPosition(_mapRect.left + _selector.x * _tileSize.x, _mapRect.top + _selector.y * _tileSize.y);
+            _updateSelector = false;
+        }
+
         if(_pendingUpdate)
         {
             for(unsigned int i = 0; i < _map.size(); ++i)
