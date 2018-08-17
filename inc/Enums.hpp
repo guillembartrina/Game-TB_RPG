@@ -74,9 +74,10 @@ enum ActionType
 
 enum TurnPhase
 {
-    TP_SELECT,
+    TP_BEGIN,
     TP_SELECTED,
-    TP_ACTION
+    TP_ACTION,
+    TP_ABILITY
 };
 
 enum TarjetTeam

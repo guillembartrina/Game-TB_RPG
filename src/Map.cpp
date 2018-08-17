@@ -37,6 +37,8 @@ Map::Map(sf::FloatRect mapRect)
     rs_background.setOutlineColor(sf::Color::Yellow);
     rs_background.setOutlineThickness(4.f);
 
+    _pointer = Coord(0, 0);
+    _selector = Coord(0, 0);
     _printPointer = false;
     _printSelector = false;
 
@@ -114,7 +116,6 @@ void Map::setMap(Resources& resources, const MapData& map, std::vector<std::vect
     }
 
     _mapLoaded = true;
-
     _pendingUpdate = true;
 }
 
@@ -137,8 +138,9 @@ Coord& Map::selector()
     return _selector;
 }
 
-void Map::selectCell(const Coord& coord, bool movement)
+bool Map::selectCell(const Coord& coord, bool movement)
 {
+    bool tarjets = false;
     Unit& current = *_map[coord.x][coord.y]._unit;
 
     selector() = coord;
@@ -146,15 +148,17 @@ void Map::selectCell(const Coord& coord, bool movement)
 
     if(movement)
     {
-        bfsMovement(current._position, current._team, current._movementType, current._movementRange, current._specialMovementRange);
+        tarjets = bfsMovement(current._position, current._team, current._movementType, current._movementRange, current._specialMovementRange);
         //bfs(current._position, current._team, current._movementType, current._movementRange);
     }
     else
     {
-        bfsAction(current._position, current._team, current._base._weapon._tarjetsEnemy, current._base._weapon._tarjetsAlly, current._base._weapon._range, current._base._weapon._specialRange);
+        tarjets = bfsAction(current._position, current._team, current._base._weapon._tarjetsEnemy, current._base._weapon._tarjetsAlly, current._base._weapon._range, current._base._weapon._specialRange);
     }
 
    _pendingUpdate = true;
+
+   return tarjets;
 }
 
 void Map::eraseSelection()
@@ -187,6 +191,7 @@ void Map::moveUnit(Unit* unit, const Coord& coord)
     {
         _map[unit->_position.x][unit->_position.y]._unit = nullptr;
         _map[coord.x][coord.y]._unit = unit;
+        unit->_position = coord;
         
         unit->_base._sprite.setPosition(_mapRect.left + coord.x*_tileSize.x, _mapRect.top + coord.y*_tileSize.y);
     }
@@ -248,8 +253,10 @@ void Map::draw(sf::RenderWindow& window) const
     }
 }
 
-void Map::bfsMovement(const Coord& origin, unsigned int team, MovementType type, const std::set<int>& range, const std::vector<Coord>& specialRange)
+bool Map::bfsMovement(const Coord& origin, unsigned int team, MovementType type, const std::set<int>& range, const std::vector<Coord>& specialRange)
 {
+    bool tarjets = false;
+
     if(!range.empty())
     {
         std::set<int>::iterator it = range.begin();
@@ -292,7 +299,11 @@ void Map::bfsMovement(const Coord& origin, unsigned int team, MovementType type,
                             seg = true;
                             mod = res.second;
 
-                            if(range.find(cell._distance) != range.end()) cell._action = ActionType::AT_MOVE;
+                            if(range.find(cell._distance) != range.end())
+                            {
+                                cell._action = ActionType::AT_MOVE;
+                                tarjets = true;
+                            }
                         }
                     } 
                 }
@@ -323,12 +334,16 @@ void Map::bfsMovement(const Coord& origin, unsigned int team, MovementType type,
         if(correctCoord(pos) && _map[pos.x][pos.y].empty())
         {
             _map[pos.x][pos.y]._action = ActionType::AT_MOVE;
+            tarjets = true;
         }
     }
+
+    return tarjets;
 }
 
-void Map::bfsAction(const Coord& origin, unsigned int team, bool tarjetEnemy, bool tarjetAlly, const std::set<int>& range, const std::vector<Coord>& specialRange)
+bool Map::bfsAction(const Coord& origin, unsigned int team, bool tarjetEnemy, bool tarjetAlly, const std::set<int>& range, const std::vector<Coord>& specialRange)
 {
+    bool tarjets = false;
     if(!range.empty())
     {
         std::set<int>::iterator it = range.begin();
@@ -364,8 +379,17 @@ void Map::bfsAction(const Coord& origin, unsigned int team, bool tarjetEnemy, bo
                     seg = true;
                     if(!cell.empty())
                     {
-                        if(tarjetEnemy && cell._unit->_team != team) cell._action = ActionType::AT_ENEMY;
-                        if(tarjetAlly && cell._unit->_team == team) cell._action = ActionType::AT_ALLY;
+                        if(tarjetEnemy && cell._unit->_team != team)
+                        {
+                            cell._action = ActionType::AT_ENEMY;
+                            tarjets = true;
+                        }
+
+                        if(tarjetAlly && cell._unit->_team == team)
+                        {
+                            cell._action = ActionType::AT_ALLY;
+                            tarjets = true;
+                        }
                     }
                 }
 
@@ -395,8 +419,11 @@ void Map::bfsAction(const Coord& origin, unsigned int team, bool tarjetEnemy, bo
         if(correctCoord(pos) && _map[pos.x][pos.y].empty())
         {
             _map[pos.x][pos.y]._action = ActionType::AT_MOVE;
+            tarjets = true;
         }
     }
+
+    return tarjets;
 }
 
 

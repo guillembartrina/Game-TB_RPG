@@ -61,7 +61,7 @@ public:
     Coord& pointer();
     Coord& selector();
 
-    void selectCell(const Coord& coord, bool movement = true);
+    bool selectCell(const Coord& coord, bool movement = true);
     void eraseSelection();
 
     bool correctCoord(const Coord& coord);
@@ -78,8 +78,8 @@ public:
 private:
 
     /* F */
-    void bfsMovement(const Coord& origin, unsigned int team, MovementType type, const std::set<int>& range, const std::vector<Coord>& specialRange);
-    void bfsAction(const Coord& origin, unsigned int team, bool tarjetEnemy, bool tarjetAlly, const std::set<int>& range, const std::vector<Coord>& specialRange);
+    bool bfsMovement(const Coord& origin, unsigned int team, MovementType type, const std::set<int>& range, const std::vector<Coord>& specialRange);
+    bool bfsAction(const Coord& origin, unsigned int team, bool tarjetEnemy, bool tarjetAlly, const std::set<int>& range, const std::vector<Coord>& specialRange);
 
     std::pair<bool, int> terrainPass(MovementType mType, TerrainType tType);
 

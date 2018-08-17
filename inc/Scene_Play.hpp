@@ -7,6 +7,7 @@
 
 #include "Map.hpp"
 #include "Unit.hpp"
+#include "List.hpp"
 
 enum DataUnit
 {
@@ -68,6 +69,9 @@ private:
     sf::RectangleShape rs_info;
     sf::Text t_currentTeam;
     std::vector<sf::Text> t_dataUnit;
+    sf::Text t_infoAbility;
+    List _abilities;
+    
 };
 
 #endif

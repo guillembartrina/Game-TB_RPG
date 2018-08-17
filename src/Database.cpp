@@ -145,7 +145,7 @@ void Database::loadUnits(Resources& resources)
 
         for(int j = 0; j < tmp; ++j)
         {
-            _units[i]._specialMovementRange.insert(_units[i]._specialMovementRange.end(), Coord(data["Units"][i]["movement"]["specialMovementCoords"][j][0].as_int(), data["Units"][i]["movement"]["specialMovementCoords"][j][1].as_int()));
+            _units[i]._specialMovementRange.insert(_units[i]._specialMovementRange.end(), Coord(data["Units"][i]["movement"]["specialMovementRange"][j][0].as_int(), data["Units"][i]["movement"]["specialMovementRange"][j][1].as_int()));
         }
         
         tmp = data["Units"][i]["attributes"].size();
