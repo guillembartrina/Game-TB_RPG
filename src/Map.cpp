@@ -47,10 +47,11 @@ Map::Map(sf::FloatRect mapRect)
 
 Map::~Map() {}
 
-void Map::setMap(Resources& resources, const MapData& map, std::vector<std::vector<Unit>>& teams)
+void Map::setMap(Resources& resources, const MapData& mapData, std::vector<std::vector<Unit>>& teams)
 {
-    _WCells = map._map.size();
-    _HCells = map._map[0].size();
+    _base = mapData;
+    _WCells = mapData._map.size();
+    _HCells = mapData._map[0].size();
 
     _map = std::vector<std::vector<Cell>>(_WCells, std::vector<Cell>(_HCells));
 
@@ -69,7 +70,7 @@ void Map::setMap(Resources& resources, const MapData& map, std::vector<std::vect
         for(unsigned int j = 0; j < _HCells; ++j)
         {
 
-            TerrainType terrain = map._map[i][j];
+            TerrainType terrain = mapData._map[i][j];
 
             _map[i][j] = Cell(Coord(i, j), terrain);
 

@@ -55,7 +55,7 @@ public:
     Map(sf::FloatRect mapRect);
     ~Map();
 
-    void setMap(Resources& resources, const MapData& map, std::vector<std::vector<Unit>>& teams);
+    void setMap(Resources& resources, const MapData& mapData, std::vector<std::vector<Unit>>& teams);
 
     Cell& getCell(const Coord& coord);
     Coord& pointer();
@@ -84,6 +84,7 @@ private:
     std::pair<bool, int> terrainPass(MovementType mType, TerrainType tType);
 
     /* DATA */
+    MapData _base;
     sf::FloatRect _mapRect;
     sf::Vector2f _tileSize;
     std::vector<std::vector<Cell>> _map;

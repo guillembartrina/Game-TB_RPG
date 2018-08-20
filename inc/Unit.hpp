@@ -41,6 +41,7 @@ public:
     ~Unit();
 
     void init(const UnitData& unitData, int team, const Coord& position);
+
     void update();
 
     /* DATA */
@@ -53,9 +54,7 @@ public:
 
     Coord _position;
 
-    bool _dazed;
-    bool _fixed;
-    bool _god;
+    std::vector<bool> _states;
 
     MovementType _movementType;
     std::set<int> _movementRange;
@@ -63,7 +62,6 @@ public:
 
     std::vector<int> _attributes; //U
     std::map<OtherUnitAttribute, AttrBase*> _otherAttributes; //U
-    //bool _pendingUpdate;
 
     //Effects, abilities, states
 };

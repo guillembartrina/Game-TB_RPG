@@ -74,9 +74,9 @@ private:
     sf::Color c_pickedElement;
     sf::Color c_pickerOutline;
 
-    bool _active;
-
     sf::RectangleShape rs_background;
+
+    bool _active;
 
     unsigned int _numPageElements;
     unsigned int _currentPageElement;

@@ -60,6 +60,7 @@ private:
 
     /* VARS */
     unsigned int _currentTeam;
+    unsigned int _remainUnits;
     TurnPhase _currentTurnPhase;
     bool _selected;
     Unit* _currentUnit;
@@ -70,6 +71,7 @@ private:
     sf::Text t_currentTeam;
     std::vector<sf::Text> t_dataUnit;
     sf::Text t_infoAbility;
+    sf::Text t_infoFinish;
     List _abilities;
     
 };

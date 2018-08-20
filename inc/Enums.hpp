@@ -13,7 +13,7 @@ enum WeaponType
     WT_OTHER
 };
 
-enum DamageType //UNTOUCHABLE
+enum DamageType //UNTOUCHABLE mmm
 {
     DT_F,
     DT_M,
@@ -44,24 +44,12 @@ enum OtherUnitAttribute
 {
 };
 
-enum TerrainType
+enum UnitState
 {
-    TT_PLAINS,
-    TT_FOREST,
-    TT_MOUNTAIN,
-    TT_WATER,
-    TT_WALL,
-    TT_FORTRESS
-};
-
-enum TerrainAttribute
-{
-    TA_TYPE,
-    TA_WALKABKE,
-    TA_FLYABLE,
-    TA_MOUNTABLE,
-    TA_DEADLY,
-    TA_EFFECT
+    FIXED,
+    DAZED,
+    GOD,
+    US_ELEMS
 };
 
 enum ActionType
@@ -84,6 +72,26 @@ enum TarjetTeam
 {
     TT_ENEMY,
     TT_ALLY
+};
+
+enum TerrainType
+{
+    TT_PLAINS,
+    TT_FOREST,
+    TT_MOUNTAIN,
+    TT_WATER,
+    TT_WALL,
+    TT_FORTRESS
+};
+
+enum TerrainAttribute
+{
+    TA_TYPE,
+    TA_WALKABKE,
+    TA_FLYABLE,
+    TA_MOUNTABLE,
+    TA_DEADLY,
+    TA_EFFECT
 };
 
 #endif

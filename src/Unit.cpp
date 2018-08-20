@@ -7,13 +7,9 @@ UnitData::UnitData()
 
 Unit::Unit()
 {
-    _team = 0;
     _alive = false;
     _active = false;
-    //_pendingUpdate = false;
-    _dazed = false;
-    _fixed = false;
-    _god = false;
+    _states = std::vector<bool>(UnitState::US_ELEMS, false);
 }
 
 Unit::~Unit()
@@ -38,21 +34,16 @@ void Unit::init(const UnitData& unitData, int team, const Coord& position)
     _base = unitData;
     _team = team;
     _alive = true;
-    _active = false;
     _position = position;
-    //_pendingUpdate = false;
-    _dazed = false;
-    _fixed = false;
-    _god = false;
 
-    update(); //TO CHANGE
-}
-
-void Unit::update()
-{
     _movementType = _base._movementType;
     _movementRange = _base._movementRange;
     _specialMovementRange = _base._specialMovementRange;
     _attributes = _base._attributes;
     _otherAttributes = _base._otherAttributes;
+}
+
+void Unit::update()
+{
+    
 }

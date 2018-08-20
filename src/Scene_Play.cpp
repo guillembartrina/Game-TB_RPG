@@ -54,6 +54,12 @@ void Scene_Play::init()
     t_infoAbility.setFillColor(sf::Color::Yellow);
     t_infoAbility.setPosition(480, 640);
 
+    t_infoFinish.setFont(_resources.Font("font1"));
+    t_infoFinish.setString("[F] to FINISH");
+    t_infoFinish.setCharacterSize(30);
+    t_infoFinish.setFillColor(sf::Color::Red);
+    t_infoFinish.setPosition(480, 660);
+
     _abilities = List(sf::FloatRect(460, 625, 200, 165), 2, 1);
 
     _map = Map(sf::FloatRect(10, 10, 780, 600));
@@ -184,10 +190,10 @@ void Scene_Play::handleEvents(const sf::Event &event)
                         {
                             if(!_map.getCell(_map.pointer()).empty() && _map.getCell(_map.pointer())._unit->_team == _currentTeam && _map.getCell(_map.pointer())._unit->_active)
                             {
-                                bool tarjets = _map.selectCell(_map.pointer());
+                                bool tarjets = !_map.getCell(_map.pointer())._unit->_states[UnitState::FIXED] && _map.selectCell(_map.pointer());
                                 if(tarjets)
                                 {
-                                     _selected = true;
+                                    _selected = true;
                                     _currentUnit = _map.getCell(_map.selector())._unit;
                                     _currentTurnPhase = TurnPhase::TP_SELECTED;
                                 }
@@ -206,10 +212,8 @@ void Scene_Play::handleEvents(const sf::Event &event)
                             if(_map.getCell(_map.pointer())._action == ActionType::AT_MOVE)
                             {
                                 _map.eraseSelection();
-                                _selected = false;
                                 _map.moveUnit(_currentUnit, _map.pointer());
                                 _map.selectCell(_map.pointer(), false);
-                                _selected = true;
                                 _currentTurnPhase = TurnPhase::TP_ACTION;
                             }
                         }
@@ -220,9 +224,11 @@ void Scene_Play::handleEvents(const sf::Event &event)
                             {
                                 std::cerr << "Action to ENEMY" << std::endl;
                                 _currentUnit->_active = false;
-                                _currentUnit->_base._sprite.setColor(sf::Color(102, 102, 153));
+                                _currentUnit->_base._sprite.setColor(sf::Color(102, 102, 102));
                                 _map.eraseSelection();
                                 _selected = false;
+                                --_remainUnits;
+                                if(_remainUnits == 0) initPhase((++_currentTeam)%_teams.size());
                                 _currentTurnPhase = TurnPhase::TP_BEGIN;
                             }
 
@@ -230,9 +236,11 @@ void Scene_Play::handleEvents(const sf::Event &event)
                             {
                                 std::cerr << "Action to ALLY" << std::endl;
                                 _currentUnit->_active = false;
-                                _currentUnit->_base._sprite.setColor(sf::Color(102, 102, 153));
+                                _currentUnit->_base._sprite.setColor(sf::Color(102, 102, 102));
                                 _map.eraseSelection();
                                 _selected = false;
+                                --_remainUnits;
+                                if(_remainUnits == 0) initPhase((++_currentTeam)%_teams.size());
                                 _currentTurnPhase = TurnPhase::TP_BEGIN;
                             }
                         }
@@ -283,6 +291,26 @@ void Scene_Play::handleEvents(const sf::Event &event)
                     }
                 }
                     break;
+                case sf::Keyboard::F:
+                {
+                    switch(_currentTurnPhase)
+                    {
+                        case TurnPhase::TP_ACTION:
+                        {
+                            _currentUnit->_active = false;
+                            _currentUnit->_base._sprite.setColor(sf::Color(102, 102, 102));
+                            _map.eraseSelection();
+                            _selected = false;
+                            --_remainUnits;
+                            if(_remainUnits == 0) initPhase((++_currentTeam)%_teams.size());
+                            _currentTurnPhase = TurnPhase::TP_BEGIN;                            
+                        }
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                    break;
                 default:
                     break;
             }
@@ -307,7 +335,7 @@ void Scene_Play::draw(sf::RenderWindow& window) const
     window.draw(rs_info);
     window.draw(t_title);
     window.draw(t_currentTeam);
-
+    if(_currentTurnPhase != TurnPhase::TP_SELECTED) window.draw(t_infoFinish);
     if(_currentTurnPhase == TurnPhase::TP_ACTION) window.draw(t_infoAbility);
     if(_currentTurnPhase == TurnPhase::TP_ABILITY) _abilities.draw(window);
 
@@ -326,6 +354,7 @@ void Scene_Play::resume() {}
 void Scene_Play::initPhase(unsigned int team)
 {
     _currentTeam = team;
+    _remainUnits = 0;
     t_currentTeam.setString("Team " + std::to_string(team));
 
     for(unsigned int i = 0; i < _teams.size(); ++i)
@@ -341,8 +370,17 @@ void Scene_Play::initPhase(unsigned int team)
     {
         if(_teams[team][i]._alive)
         {
-            _teams[team][i]._active = true;
-            _teams[team][i]._base._sprite.setColor(sf::Color(153, 255, 153));
+            if(!_teams[team][i]._states[UnitState::DAZED])
+            {
+                _teams[team][i]._active = true;
+                _teams[team][i]._base._sprite.setColor(sf::Color(153, 255, 153));
+                ++_remainUnits;
+            }
+            else
+            {
+                _teams[team][i]._active = false;
+                _teams[team][i]._base._sprite.setColor(sf::Color(255, 255, 153));
+            }
         }
     }
 
@@ -408,6 +446,6 @@ void Scene_Play::setDataUnit(const Unit& unit)
     t_dataUnit[DataUnit::DU_MOVEMENT_SPECIAL_RANGE].setString("S.Range:" + tmp);
     
     tmp = "";
-    if(unit._god) tmp = "#GOD#";
+    if(unit._states[UnitState::GOD]) tmp = "#GOD#";
     t_dataUnit[DataUnit::DU_GOD].setString(tmp);
 }
