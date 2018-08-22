@@ -10,6 +10,7 @@
 #include "Attr.hpp"
 #include "Weapon.hpp"
 #include "AnimatedSprite.hpp"
+#include "Modification.hpp"
 
 #include "Enums.hpp"
 
@@ -42,6 +43,8 @@ public:
 
     void init(const UnitData& unitData, int team, const Coord& position);
 
+    void applyModification(const Modification& modification);
+
     void update();
 
     /* DATA */
@@ -54,14 +57,14 @@ public:
 
     Coord _position;
 
-    std::vector<bool> _states;
-
     MovementType _movementType;
     std::set<int> _movementRange;
     std::vector<Coord> _specialMovementRange;
 
     std::vector<int> _attributes; //U
     std::map<OtherUnitAttribute, AttrBase*> _otherAttributes; //U
+
+    std::vector<bool> _states;
 
     //Effects, abilities, states
 };

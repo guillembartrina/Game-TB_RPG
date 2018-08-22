@@ -43,6 +43,25 @@ void Unit::init(const UnitData& unitData, int team, const Coord& position)
     _otherAttributes = _base._otherAttributes;
 }
 
+void Unit::applyModification(const Modification& modification)
+{
+    if(modification._modAttributes)
+    {
+        int res = modification._aValue;
+
+        for(unsigned int i = 0; i < modification._aPro.size(); ++i) res += _attributes[modification._aPro[i].first] * modification._aPro[i].second;
+        for(unsigned int i = 0; i < modification._aCont.size(); ++i) res -= _attributes[modification._aCont[i].first] * modification._aCont[i].second;
+
+        if(modification._aRelative) _attributes[modification._aTarjet] += res;
+        else _attributes[modification._aTarjet] = res;
+    }
+
+    if(modification._modStates)
+    {
+        _states[modification._sTarjet] = modification._sValue;
+    }
+}
+
 void Unit::update()
 {
     

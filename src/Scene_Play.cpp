@@ -11,7 +11,7 @@ void Scene_Play::init()
     t_title.setString("Press 'e' to exit");
     t_title.setCharacterSize(30);
     t_title.setFillColor(sf::Color::White);
-    t_title.setPosition(650, 700);
+    t_title.setPosition(10, 700);
 
     t_currentTeam.setFont(_resources.Font("font1"));
     t_currentTeam.setCharacterSize(40);
@@ -52,15 +52,15 @@ void Scene_Play::init()
     t_infoAbility.setString("[A] to ABILITY");
     t_infoAbility.setCharacterSize(30);
     t_infoAbility.setFillColor(sf::Color::Yellow);
-    t_infoAbility.setPosition(480, 640);
+    t_infoAbility.setPosition(640, 640);
 
     t_infoFinish.setFont(_resources.Font("font1"));
     t_infoFinish.setString("[F] to FINISH");
     t_infoFinish.setCharacterSize(30);
     t_infoFinish.setFillColor(sf::Color::Red);
-    t_infoFinish.setPosition(480, 660);
+    t_infoFinish.setPosition(640, 660);
 
-    _abilities = List(sf::FloatRect(460, 625, 200, 165), 2, 1);
+    _abilities = List(sf::FloatRect(620, 625, 175, 165), 2, 1);
 
     _map = Map(sf::FloatRect(10, 10, 780, 600));
 

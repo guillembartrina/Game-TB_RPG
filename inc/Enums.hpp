@@ -48,6 +48,7 @@ enum UnitState
 {
     FIXED,
     DAZED,
+    EFFECTS_IMMUNITY,
     GOD,
     US_ELEMS
 };
