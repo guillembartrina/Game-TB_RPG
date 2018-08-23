@@ -36,15 +36,16 @@ void Scene_Play::init()
 
     t_dataUnit[DataUnit::DU_NAME].setPosition(120, 610);
     t_dataUnit[DataUnit::DU_TEAM].setPosition(270, 610);
-    t_dataUnit[DataUnit::DU_HP].setPosition(120, 650);
-    t_dataUnit[DataUnit::DU_RESIST_F].setPosition(120, 666);
-    t_dataUnit[DataUnit::DU_RESIST_M].setPosition(120, 682);
-    t_dataUnit[DataUnit::DU_WEAPON].setPosition(250, 650);
-    t_dataUnit[DataUnit::DU_WEAPON_RANGE].setPosition(270, 666);
-    t_dataUnit[DataUnit::DU_WEAPON_SPECIAL_RANGE].setPosition(270, 682);
-    t_dataUnit[DataUnit::DU_MOVEMENT].setPosition(250, 710);
-    t_dataUnit[DataUnit::DU_MOVEMENT_RANGE].setPosition(270, 726);
-    t_dataUnit[DataUnit::DU_MOVEMENT_SPECIAL_RANGE].setPosition(270, 742);
+    t_dataUnit[DataUnit::DU_HP].setPosition(120, 645);
+    t_dataUnit[DataUnit::DU_RESIST_F].setPosition(120, 661);
+    t_dataUnit[DataUnit::DU_RESIST_M].setPosition(120, 677);
+    t_dataUnit[DataUnit::DU_WEAPON].setPosition(250, 645);
+    t_dataUnit[DataUnit::DU_WEAPON_TYPE].setPosition(270, 661);
+    t_dataUnit[DataUnit::DU_WEAPON_RANGE].setPosition(270, 677);
+    t_dataUnit[DataUnit::DU_WEAPON_SPECIAL_RANGE].setPosition(270, 693);
+    t_dataUnit[DataUnit::DU_MOVEMENT].setPosition(250, 721);
+    t_dataUnit[DataUnit::DU_MOVEMENT_RANGE].setPosition(270, 737);
+    t_dataUnit[DataUnit::DU_MOVEMENT_SPECIAL_RANGE].setPosition(270, 753);
     t_dataUnit[DataUnit::DU_GOD].setPosition(300, 610);
     t_dataUnit[DataUnit::DU_GOD].setString("");
 
@@ -60,7 +61,8 @@ void Scene_Play::init()
     t_infoFinish.setFillColor(sf::Color::Red);
     t_infoFinish.setPosition(640, 660);
 
-    _abilities = List(sf::FloatRect(620, 625, 175, 165), 2, 1);
+    _passives = List(sf::FloatRect(460, 625, 100, 165), 3);
+    _abilities = List(sf::FloatRect(600, 625, 175, 165), 2, 1);
 
     _map = Map(sf::FloatRect(10, 10, 780, 600));
 
@@ -101,6 +103,9 @@ void Scene_Play::handleEvents(const sf::Event &event)
             {
                 case sf::Keyboard::E:
                     _sceneHandler.popScene();
+                    break;
+                case sf::Keyboard::P:
+                    if(_selected) _currentUnit->_passives.insert(_currentUnit->_passives.end(), Passive("test", -1, {TarjetTeam::TT_ALLY}, {Modification(UnitAttribute::UA_HP, true, -20, true, {}, {})}));
                     break;
                 case sf::Keyboard::Up:
                 {
@@ -324,6 +329,7 @@ void Scene_Play::handleEvents(const sf::Event &event)
 void Scene_Play::update(const sf::Time deltatime)
 {
     _map.update(deltatime);
+    _passives.update(deltatime);
 
     if(_currentTurnPhase == TurnPhase::TP_ABILITY) _abilities.update(deltatime);
 
@@ -335,6 +341,7 @@ void Scene_Play::draw(sf::RenderWindow& window) const
     window.draw(rs_info);
     window.draw(t_title);
     window.draw(t_currentTeam);
+
     if(_currentTurnPhase != TurnPhase::TP_SELECTED) window.draw(t_infoFinish);
     if(_currentTurnPhase == TurnPhase::TP_ACTION) window.draw(t_infoAbility);
     if(_currentTurnPhase == TurnPhase::TP_ABILITY) _abilities.draw(window);
@@ -343,6 +350,7 @@ void Scene_Play::draw(sf::RenderWindow& window) const
     {
         window.draw(i);
     }
+    _passives.draw(window);
 
     _map.draw(window);
 }
@@ -363,6 +371,9 @@ void Scene_Play::initPhase(unsigned int team)
         {
             _teams[i][j]._active = false;
             _teams[i][j]._base._sprite.setColor(sf::Color::White);
+
+            if(i == team) _teams[i][j].update(TarjetTeam::TT_ALLY);
+            else _teams[i][j].update(TarjetTeam::TT_ENEMY);
         }
     }
 
@@ -396,6 +407,7 @@ void Scene_Play::setDataUnit(const Unit& unit)
     t_dataUnit[DataUnit::DU_RESIST_F].setString("RES(F): " + std::to_string(unit._attributes[UnitAttribute::UA_RESIST_F]));
     t_dataUnit[DataUnit::DU_RESIST_M].setString("RES(M): " + std::to_string(unit._attributes[UnitAttribute::UA_RESIST_M]));
     t_dataUnit[DataUnit::DU_WEAPON].setString("WEAPON: " + unit._base._weapon._name);
+    t_dataUnit[DataUnit::DU_WEAPON_TYPE].setString("Type: " + WT_Strings[unit._base._weapon._type]);
 
     std::string tmp = "";
     std::set<int>::const_iterator it = unit._base._weapon._range.begin();
@@ -420,7 +432,7 @@ void Scene_Play::setDataUnit(const Unit& unit)
 
     t_dataUnit[DataUnit::DU_WEAPON_SPECIAL_RANGE].setString("S.Range:" + tmp);
 
-    t_dataUnit[DataUnit::DU_MOVEMENT].setString("MOVEMENT: " + std::to_string(unit._movementType));
+    t_dataUnit[DataUnit::DU_MOVEMENT].setString("MOVEMENT: " + MT_Strings[unit._movementType]);
 
     tmp = "";
     it = unit._movementRange.begin();
@@ -448,4 +460,24 @@ void Scene_Play::setDataUnit(const Unit& unit)
     tmp = "";
     if(unit._states[UnitState::GOD]) tmp = "#GOD#";
     t_dataUnit[DataUnit::DU_GOD].setString(tmp);
+
+
+    _passives.clear();
+
+    std::list<Passive>::const_iterator it2 = unit._passives.begin();
+    while(it2 != unit._passives.end())
+    {
+        Item tmp;
+
+        sf::Text text;
+        text.setFont(_resources.Font("font1"));
+        text.setCharacterSize(40);
+
+        text.setString(it2->_name);
+        tmp.addText(sf::Vector2f(10, 6), text);
+
+        _passives.add(tmp);
+
+        ++it2;
+    }
 }

@@ -1,6 +1,9 @@
 #ifndef ENUMS_HPP
 #define ENUMS_HPP
 
+#include <string>
+#include <vector>
+
 enum WeaponType
 {
     WT_SWORD,
@@ -12,6 +15,8 @@ enum WeaponType
     WT_PROJECTILE,
     WT_OTHER
 };
+
+static const std::vector<std::string> WT_Strings{"Sword", "Lance", "Axe", "Tome", "Rod", "Bow", "Projectile", "Other"};
 
 enum DamageType //UNTOUCHABLE mmm
 {
@@ -30,6 +35,8 @@ enum MovementType
     MT_OTHER
 };
 
+static const std::vector<std::string> MT_Strings{"Walking", "Flying", "Mounted", "Other"};
+
 enum UnitAttribute
 {
     UA_HP,
@@ -38,7 +45,7 @@ enum UnitAttribute
     UA_ELEMS
 };
 
-//std::vector<std::string> UA_Strings = {"HP", "RES(F)", "RES(M)"};
+static const std::vector<std::string> UA_Strings{"HP", "RES(F)", "RES(M)"};
 
 enum OtherUnitAttribute
 {

@@ -17,6 +17,7 @@ enum DataUnit
     DU_RESIST_F,
     DU_RESIST_M,
     DU_WEAPON,
+    DU_WEAPON_TYPE,
     DU_WEAPON_RANGE,
     DU_WEAPON_SPECIAL_RANGE,
     DU_MOVEMENT,
@@ -72,6 +73,7 @@ private:
     std::vector<sf::Text> t_dataUnit;
     sf::Text t_infoAbility;
     sf::Text t_infoFinish;
+    List _passives;
     List _abilities;
     
 };

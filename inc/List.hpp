@@ -64,6 +64,8 @@ public:
 
     void draw(sf::RenderWindow& window) const;
 
+    void clear();
+
 private:
 
     sf::FloatRect _listRect;

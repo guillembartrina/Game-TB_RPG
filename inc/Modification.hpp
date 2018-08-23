@@ -12,8 +12,8 @@ class Modification
 public:
 
     Modification();
-    Modification(UnitAttribute tarjet, bool relative, int value, std::vector<std::pair<UnitAttribute, float>> pro, std::vector<std::pair<UnitAttribute, float>> cont);
-    Modification(UnitState tarjet, bool value);
+    Modification(UnitAttribute tarjet, bool relative, int value, bool permanent, std::vector<std::pair<UnitAttribute, float>> pro, std::vector<std::pair<UnitAttribute, float>> cont);
+    Modification(UnitState tarjet, bool value, bool permanent);
     ~Modification();
 
     bool _modAttributes;
@@ -29,6 +29,8 @@ public:
 
     UnitState _sTarjet;
     bool _sValue;
+
+    bool _permanent;
 
 /*
     bool _modPassive;

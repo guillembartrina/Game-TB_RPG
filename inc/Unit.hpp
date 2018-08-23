@@ -11,6 +11,7 @@
 #include "Weapon.hpp"
 #include "AnimatedSprite.hpp"
 #include "Modification.hpp"
+#include "Passive.hpp"
 
 #include "Enums.hpp"
 
@@ -45,11 +46,14 @@ public:
 
     void applyModification(const Modification& modification);
 
-    void update();
+    void update(TarjetTeam team);
 
     /* DATA */
     unsigned int _team;
     UnitData _base;
+
+    std::vector<int> _baseAttributes;
+    std::vector<bool> _baseStates;
 
     /* VARS */
     bool _alive;
@@ -66,7 +70,7 @@ public:
 
     std::vector<bool> _states;
 
-    //Effects, abilities, states
+    std::list<Passive> _passives;
 };
 
 #endif

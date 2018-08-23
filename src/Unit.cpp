@@ -9,6 +9,7 @@ Unit::Unit()
 {
     _alive = false;
     _active = false;
+    _baseStates = std::vector<bool>(UnitState::US_ELEMS, false);
     _states = std::vector<bool>(UnitState::US_ELEMS, false);
 }
 
@@ -39,6 +40,7 @@ void Unit::init(const UnitData& unitData, int team, const Coord& position)
     _movementType = _base._movementType;
     _movementRange = _base._movementRange;
     _specialMovementRange = _base._specialMovementRange;
+    _baseAttributes = _base._attributes;
     _attributes = _base._attributes;
     _otherAttributes = _base._otherAttributes;
 }
@@ -52,17 +54,46 @@ void Unit::applyModification(const Modification& modification)
         for(unsigned int i = 0; i < modification._aPro.size(); ++i) res += _attributes[modification._aPro[i].first] * modification._aPro[i].second;
         for(unsigned int i = 0; i < modification._aCont.size(); ++i) res -= _attributes[modification._aCont[i].first] * modification._aCont[i].second;
 
-        if(modification._aRelative) _attributes[modification._aTarjet] += res;
-        else _attributes[modification._aTarjet] = res;
+        if(modification._aRelative)
+        {
+            _attributes[modification._aTarjet] += res;
+            if(modification._permanent) _baseAttributes[modification._aTarjet] += res;
+        }
+        else
+        {
+            _attributes[modification._aTarjet] = res;
+            if(modification._permanent) _baseAttributes[modification._aTarjet] = res;
+        }
     }
 
     if(modification._modStates)
     {
         _states[modification._sTarjet] = modification._sValue;
+        if(modification._permanent) _baseStates[modification._sTarjet] = modification._sValue;
     }
 }
 
-void Unit::update()
+void Unit::update(TarjetTeam team)
 {
-    
+    _attributes = _baseAttributes;
+    _states = _baseStates;
+
+    std::list<Passive>::iterator it = _passives.begin();
+    while(it != _passives.end())
+    {
+        if(it->_triggerTurns.find(team) != it->_triggerTurns.end())
+        {
+            std::cerr << "APPLY: " << it->_name << ", turns: " << it->_turns << std::endl;
+
+            for(unsigned int i = 0; i < it->_modifications.size(); ++i) applyModification(it->_modifications[i]);
+
+            if(it->_turns != -1)
+            {
+                --it->_turns;
+                if(it->_turns == 0) it = _passives.erase(it);
+            }
+        }
+
+        ++it;
+    }
 }

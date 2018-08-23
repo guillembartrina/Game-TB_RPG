@@ -297,3 +297,16 @@ void List::draw(sf::RenderWindow& window) const
         }
     }
 }
+
+void List::clear()
+{
+    _active = false;
+
+    for(unsigned int i = 0; i < _numPageElements; ++i)
+    {
+        _page[i]._active = false;
+        _page[i]._item = nullptr;
+    }
+
+    _items.clear();
+}
