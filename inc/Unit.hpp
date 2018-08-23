@@ -44,8 +44,6 @@ public:
 
     void init(const UnitData& unitData, int team, const Coord& position);
 
-    void applyModification(const Modification& modification);
-
     void update(TarjetTeam team);
 
     /* DATA */
@@ -71,6 +69,10 @@ public:
     std::vector<bool> _states;
 
     std::list<Passive> _passives;
+
+private:
+
+    void applyModification(const Modification& modification);
 };
 
 #endif

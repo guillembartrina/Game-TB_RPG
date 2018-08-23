@@ -60,6 +60,8 @@ enum UnitState
     US_ELEMS
 };
 
+static const std::vector<std::string> US_Strings{"Fixed", "Dazed", "Eff.Inm.", "GOD"};
+
 enum ActionType
 {
     AT_MOVE,
@@ -81,6 +83,8 @@ enum TarjetTeam
     TT_ENEMY,
     TT_ALLY
 };
+
+static const std::vector<std::string> TT_Strings{"E", "A"};
 
 enum TerrainType
 {

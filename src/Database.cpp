@@ -155,7 +155,8 @@ void Database::loadUnits(Resources& resources)
             _units[i]._attributes[j] = data["Units"][i]["attributes"][j].as_int();
         }
 
-        _units[i]._sprite.addAnimation("idle", resources.Texture(data["Units"][i]["sprite"].as_string()), 8, sf::Vector2u(64, 64), sf::seconds(0.1f), true);
+        _units[i]._sprite.addAnimation("idle", resources.Texture(data["Units"][i]["sprite"].as_string()), 4, sf::Vector2u(64, 64), sf::seconds(0.2f), true);
+        _units[i]._sprite.addAnimation("attack", resources.Texture(data["Units"][i]["sprite"].as_string()), 4, 1, sf::Vector2u(64, 64), sf::seconds(0.1f), true);
         _units[i]._sprite.setActiveAnimation("idle");
     }
 

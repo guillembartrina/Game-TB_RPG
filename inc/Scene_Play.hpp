@@ -73,6 +73,8 @@ private:
     std::vector<sf::Text> t_dataUnit;
     sf::Text t_infoAbility;
     sf::Text t_infoFinish;
+    sf::Text t_infoPassives;
+    sf::Text t_infoBack;
     List _passives;
     List _abilities;
     

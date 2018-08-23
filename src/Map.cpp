@@ -85,14 +85,14 @@ void Map::setMap(Resources& resources, const MapData& mapData, std::vector<std::
     }
 
     rs_pointer.setTexture(&resources.Texture("pointer"));
-    rs_pointer.setTextureRect(sf::IntRect(0, 0, 32, 32));
+    rs_pointer.setTextureRect(sf::IntRect(0, 0, 64, 64));
     rs_pointer.setSize(_tileSize);
     rs_pointer.setPosition(_mapRect.left, _mapRect.top);
 
     _printPointer = true;
 
     rs_selector.setTexture(&resources.Texture("pointer"));
-    rs_selector.setTextureRect(sf::IntRect(32, 0, 32, 32));
+    rs_selector.setTextureRect(sf::IntRect(64, 0, 64, 64));
     rs_selector.setSize(_tileSize);
     rs_selector.setPosition(_mapRect.left, _mapRect.top);
 
@@ -220,7 +220,7 @@ void Map::update(const sf::Time deltatime)
             {
                 for(unsigned int j = 0; j < _map[0].size(); ++j)
                 {
-                    if(_map[i][j]._action != ActionType::AT_NONE) _map[i][j].rs_action.setTextureRect(sf::IntRect(int(_map[i][j]._action)*32, 0, 32, 32));
+                    if(_map[i][j]._action != ActionType::AT_NONE) _map[i][j].rs_action.setTextureRect(sf::IntRect(int(_map[i][j]._action)*64, 0, 64, 64));
                 }
             }
 
