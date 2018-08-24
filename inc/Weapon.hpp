@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "Coord.hpp"
+#include "Effect.hpp"
 
 #include "Enums.hpp"
 
@@ -24,15 +25,10 @@ public:
     std::vector<Coord> _specialRange;
 
     bool _tarjetsEnemy;
-    std::vector<int> _enemy;
-    //Effects
+    std::vector<Effect> _enemy;
 
     bool _tarjetsAlly;
-    std::vector<int> _ally;
-    //Effects
-
-    //std::vector<Effect> _enemyEffects;
-    //std::vector<Effect> _allyEffects;
+    std::vector<Effect> _ally;
     
     //Effects, abilities, bonuses agaist, requeriments
 

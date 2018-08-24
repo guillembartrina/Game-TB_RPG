@@ -33,7 +33,7 @@ public:
     
     ~Cond() {}
 
-    static bool evalCond(T data, Cond cond) const
+   bool evalCond(T data, Cond cond) const
     {
         bool res = false;
 
@@ -64,6 +64,8 @@ public:
                 res = (value >= cond.value);
                 break;
         }
+
+        return res;
     }
 
 };

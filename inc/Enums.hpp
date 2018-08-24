@@ -18,12 +18,11 @@ enum WeaponType
 
 static const std::vector<std::string> WT_Strings{"Sword", "Lance", "Axe", "Tome", "Rod", "Bow", "Projectile", "Other"};
 
-enum DamageType //UNTOUCHABLE mmm
+enum DamageType
 {
     DT_F,
     DT_M,
     DT_T,
-    DT_H,
     DT_ELEMS
 };
 

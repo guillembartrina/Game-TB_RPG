@@ -3,7 +3,10 @@
 
 Scene_Play::Scene_Play(SceneHandler &sceneHandler, Resources &resources, MapData *mapData, std::vector<std::list<UnitData>> *unitsData) : Scene(sceneHandler, resources), _mapData(*mapData), _unitsData(*unitsData) {}
 
-Scene_Play::~Scene_Play() {}
+Scene_Play::~Scene_Play()
+{
+    _resources.Music("ambient").stop();
+}
 
 void Scene_Play::init()
 {
@@ -101,6 +104,9 @@ void Scene_Play::init()
     }
 
     _map.setMap(_resources, _mapData, _teams);
+
+    _resources.Music("ambient").setLoop(true);
+    _resources.Music("ambient").play();
 
     _selected = false;
 
@@ -245,23 +251,19 @@ void Scene_Play::handleEvents(const sf::Event &event)
                             break;
                         case TurnPhase::TP_ACTION:
                         {
-                            if(_map.getCell(_map.pointer())._action == ActionType::AT_ENEMY)
+                            if(_map.getCell(_map.pointer())._action != ActionType::AT_NONE)
                             {
-                                std::cerr << "Action to ENEMY" << std::endl;
+                                if(_map.getCell(_map.pointer())._action == ActionType::AT_ENEMY)
+                                {
+                                    std::cerr << "ACTION TO ENEMY" << std::endl;
+                                }   
+                                else
+                                {
+                                    std::cerr << "ACTION TO ALLY" << std::endl;
+                                }   
+                                
                                 _currentUnit->_active = false;
-                                _currentUnit->_base._sprite.setColor(sf::Color(102, 102, 102));
-                                _map.eraseSelection();
-                                _selected = false;
-                                --_remainUnits;
-                                if(_remainUnits == 0) initPhase((++_currentTeam)%_teams.size());
-                                _currentTurnPhase = TurnPhase::TP_BEGIN;
-                            }
-
-                            if(_map.getCell(_map.pointer())._action == ActionType::AT_ALLY)
-                            {
-                                std::cerr << "Action to ALLY" << std::endl;
-                                _currentUnit->_active = false;
-                                _currentUnit->_base._sprite.setColor(sf::Color(102, 102, 102));
+                                _currentUnit->_base._sprite.setColor(sf::Color::White);
                                 _map.eraseSelection();
                                 _selected = false;
                                 --_remainUnits;

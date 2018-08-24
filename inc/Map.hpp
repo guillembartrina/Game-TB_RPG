@@ -7,6 +7,7 @@
 
 #include "SFML/System.hpp"
 #include "SFML/Graphics.hpp"
+#include "SFML/Audio.hpp"
 
 #include "Coord.hpp"
 #include "Resources.hpp"
@@ -68,6 +69,8 @@ public:
 
     void moveUnit(Unit* unit, const Coord& coord);
 
+    //void effect(const Coord& coord, Effect& effect);
+
     void update(const sf::Time deltatime);
 
     void draw(sf::RenderWindow& window) const;
@@ -91,6 +94,8 @@ private:
     
     bool _printPointer;
     bool _printSelector;
+
+    std::list<AnimatedSprite*> _effects;
 
     /* VARS */
     bool _mapLoaded;

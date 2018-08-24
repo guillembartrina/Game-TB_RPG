@@ -20,7 +20,7 @@ public:
 
     void load(Resources& resources);
 
-    void loadWeapons();
+    void loadWeapons(Resources& resources);
     void loadUnits(Resources& resources);
     void loadMaps(Resources& resources);
 

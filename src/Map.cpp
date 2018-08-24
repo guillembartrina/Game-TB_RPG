@@ -197,7 +197,24 @@ void Map::moveUnit(Unit* unit, const Coord& coord)
         unit->_base._sprite.setPosition(_mapRect.left + coord.x*_tileSize.x, _mapRect.top + coord.y*_tileSize.y);
     }
 }
+/*
+void Map::effect(const Coord& coord, Effect& effect)
+{
+    for(unsigned int i = 0; i < effect._area.size(); ++i)
+    {
+        Coord tarjet = coord + effect._area[i];
+        if(correctCoord(tarjet) && !_map[tarjet.x][tarjet.y].empty())
+        {
+            for(unsigned int j = 0; j < effect._modifications.size(); ++j) _map[tarjet.x][tarjet.y]._unit->applyModification(effect._modifications[j]);
+        }
+    }
 
+    effect._effect.setPosition(_mapRect.left + coord.x*_tileSize.x, _mapRect.top + coord.y*_tileSize.y);
+    effect._effect.setScale(sf::Vector2f(_tileSize.x/64, _tileSize.y/64));
+    effect._effect.setActiveAnimation("effect");
+    _effects.insert(_effects.end(), &effect._effect);
+}
+*/
 void Map::update(const sf::Time deltatime)
 {
     if(_mapLoaded)
@@ -226,6 +243,19 @@ void Map::update(const sf::Time deltatime)
 
             _pendingUpdate = false;
         }
+
+        std::list<AnimatedSprite*>::iterator it = _effects.begin();
+        while(it != _effects.end())
+        {
+            (*it)->updateAnimation(deltatime);
+
+            if((*it)->hasAnimationEnded())
+            {
+                (*it)->firstAnimationFrame();
+                it = _effects.erase(it);
+            }
+            ++it;
+        }
     }
 }
 
@@ -247,6 +277,13 @@ void Map::draw(sf::RenderWindow& window) const
                     window.draw(_map[i][j]._unit->_base._sprite);
                 }
             }
+        }
+
+        std::list<AnimatedSprite*>::const_iterator it = _effects.begin();
+        while(it != _effects.end())
+        {
+            window.draw(*(*it));
+            ++it;
         }
 
         if(_printSelector) window.draw(rs_selector);

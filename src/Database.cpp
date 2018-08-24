@@ -15,7 +15,7 @@ void Database::load(Resources& resources)
     loadMaps(resources);
 }
 
-void Database::loadWeapons()
+void Database::loadWeapons(Resources& resources)
 {
     if(_weaponsLoaded) return;
 
@@ -54,6 +54,8 @@ void Database::loadWeapons()
             }
         }
 
+        /*
+
         _weapons[i]._tarjetsEnemy = false;
 
         if(data["Weapons"][i]["enemy"]["tarjetsEnemy"].as_bool())
@@ -62,7 +64,29 @@ void Database::loadWeapons()
 
             for(int j = 0; j < DamageType::DT_ELEMS; ++j)
             {
-                _weapons[i]._enemy[j] = data["Weapons"][i]["enemy"]["enemy"][j].as_int();
+                if(data["Weapons"][i]["enemy"]["enemy"][j].as_int() != 0)
+                {
+                    Effect effect;
+                    effect._area = {Coord(0, 0)};
+
+                    switch(j)
+                    {
+                        case DamageType::DT_F:
+                            effect._modifications = {Modification(UnitAttribute::UA_HP, true, data["Weapons"][i]["enemy"]["enemy"][j].as_int(), true, {}, {std::make_pair(UnitAttribute::UA_RESIST_F, 1.f)})};
+                            break;
+                        case DamageType::DT_M:
+                            effect._modifications = {Modification(UnitAttribute::UA_HP, true, data["Weapons"][i]["enemy"]["enemy"][j].as_int(), true, {}, {std::make_pair(UnitAttribute::UA_RESIST_M, 1.f)})};
+                            break;
+                        case DamageType::DT_T:
+                        effect._modifications = {Modification(UnitAttribute::UA_HP, true, data["Weapons"][i]["enemy"]["enemy"][j].as_int(), true, {}, {})};
+                            break;
+                    }
+
+                    effect._effect.addAnimation("effect", resources.Texture("attack"), 4, sf::Vector2u(64, 64), sf::seconds(0.1f), false);
+                    effect._effect.setActiveAnimation("effect");
+
+                    _weapons[i]._enemy.push_back(effect);
+                }
             }
         }
 
@@ -74,9 +98,34 @@ void Database::loadWeapons()
 
             for(int j = 0; j < DamageType::DT_ELEMS; ++j)
             {
-                _weapons[i]._ally[j] = data["Weapons"][i]["ally"]["ally"][j].as_int();
+                if(data["Weapons"][i]["ally"]["ally"][j].as_int() != 0)
+                {
+                    Effect effect;
+                    effect._area = {Coord(0, 0)};
+                    switch(j)
+                    {
+                        case DamageType::DT_F:
+                            effect._modifications = {Modification(UnitAttribute::UA_HP, true, data["Weapons"][i]["ally"]["ally"][j].as_int(), true, {}, {std::make_pair(UnitAttribute::UA_RESIST_F, 1.f)})};
+                            break;
+                        case DamageType::DT_M:
+                            effect._modifications = {Modification(UnitAttribute::UA_HP, true, data["Weapons"][i]["ally"]["ally"][j].as_int(), true, {}, {std::make_pair(UnitAttribute::UA_RESIST_M, 1.f)})};
+                            break;
+                        case DamageType::DT_T:
+                        effect._modifications = {Modification(UnitAttribute::UA_HP, true, data["Weapons"][i]["ally"]["ally"][j].as_int(), true, {}, {})};
+                            break;
+                    }
+
+                    effect._effect.addAnimation("effect", resources.Texture("attack"), 4, sf::Vector2u(64, 64), sf::seconds(0.1f), false);
+                    effect._effect.setActiveAnimation("effect");
+
+                    effect._sound.setBuffer(resources.Sound("attack"));
+
+                    _weapons[i]._ally.push_back(effect);
+                }
             }
         }
+
+        */
     }
     _weaponsLoaded = true;
 }
@@ -85,7 +134,7 @@ void Database::loadUnits(Resources& resources)
 {
     if(_unitsLoaded) return;
 
-    loadWeapons();
+    loadWeapons(resources);
 
     ifstream file("rsc/units.json");
     string page = "";
@@ -156,7 +205,7 @@ void Database::loadUnits(Resources& resources)
         }
 
         _units[i]._sprite.addAnimation("idle", resources.Texture(data["Units"][i]["sprite"].as_string()), 4, sf::Vector2u(64, 64), sf::seconds(0.2f), true);
-        _units[i]._sprite.addAnimation("attack", resources.Texture(data["Units"][i]["sprite"].as_string()), 4, 1, sf::Vector2u(64, 64), sf::seconds(0.1f), true);
+        _units[i]._sprite.addAnimation("attack", resources.Texture(data["Units"][i]["sprite"].as_string()), 4, 1, sf::Vector2u(64, 64), sf::seconds(0.1f), false);
         _units[i]._sprite.setActiveAnimation("idle");
     }
 
@@ -281,17 +330,21 @@ void Database::printWeapons()
         if(it->_tarjetsEnemy) std::cerr << " Enemy";
         if(it->_tarjetsAlly) std::cerr << " Ally";
         std::cerr << std::endl;
-        std::cerr << "Effects on enemy:";
+        std::cerr << "Effects on enemy: ";
+        /*
         for(int i = 0; i < DamageType::DT_ELEMS; ++i)
         {
             if(it->_enemy[i] != 0) std::cerr << " {" << i << ": " << it->_enemy[i] << "}";
         }
+        */
         std::cerr << std::endl;
-        std::cerr << "Effects on ally:";
+        std::cerr << "Effects on ally: ";
+        /*
         for(int i = 0; i < DamageType::DT_ELEMS; ++i)
         {
             if(it->_ally[i] != 0) std::cerr << " {" << i << ": " << it->_ally[i] << "}";
         }
+        */
         std::cerr << std::endl;
         std::cerr << "-------------------------------------" << std::endl;
         ++it;
