@@ -1,7 +1,6 @@
 
 #include "Scene_Menu.hpp"
-
-Scene_Menu::Scene_Menu(SceneHandler& sceneHandler, Resources& resources) : Scene(sceneHandler, resources) {}
+Scene_Menu::Scene_Menu(SceneHandler& sceneHandler, Resources& resources) : Scene(sceneHandler, resources), _database(resources){}
 
 Scene_Menu::~Scene_Menu() {}
 
@@ -27,7 +26,7 @@ void Scene_Menu::init()
 
     currentOption = 0;
 
-    _database.load(_resources);
+    _database.load();
 }
 
 void Scene_Menu::handleEvents(const sf::Event& event)

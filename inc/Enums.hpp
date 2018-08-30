@@ -85,6 +85,14 @@ enum TarjetTeam
 
 static const std::vector<std::string> TT_Strings{"E", "A"};
 
+enum PredefinedEffect
+{
+    DAMAGE_F,
+    DAMAGE_M,
+    DAMAGE_T,
+    HEAL
+};
+
 enum TerrainType
 {
     TT_PLAINS,

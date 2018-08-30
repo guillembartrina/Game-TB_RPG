@@ -6,7 +6,7 @@ Modification::Modification()
     _modStates = false;
 }
 
-Modification::Modification(UnitAttribute tarjet, bool relative, int value, bool permanent, std::vector<std::pair<UnitAttribute, float>> pro, std::vector<std::pair<UnitAttribute, float>> cont)
+Modification::Modification(UnitAttribute tarjet, bool relative, int value, bool invert, bool permanent, std::vector<std::pair<UnitAttribute, float>> sum, std::vector<std::pair<UnitAttribute, float>> res)
 {
     _modAttributes = true;
     _modStates = false;
@@ -14,10 +14,11 @@ Modification::Modification(UnitAttribute tarjet, bool relative, int value, bool 
     _aTarjet = tarjet;
     _aRelative = relative;
     _aValue = value;
+    _aInvert = invert;
     _permanent = permanent;
 
-    _aPro = pro;
-    _aCont = cont;
+    _aSum = sum;
+    _aRes = res;
 }
 
 Modification::Modification(UnitState tarjet, bool value, bool permanent)

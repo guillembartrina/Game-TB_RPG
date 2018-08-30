@@ -124,9 +124,6 @@ void Scene_Play::handleEvents(const sf::Event &event)
                 case sf::Keyboard::E:
                     _sceneHandler.popScene();
                     break;
-                case sf::Keyboard::P:
-                    if(_selected) _currentUnit->_passives.insert(_currentUnit->_passives.end(), Passive("test", -1, {TarjetTeam::TT_ALLY}, {Modification(UnitAttribute::UA_HP, true, -20, true, {}, {std::make_pair(UnitAttribute::UA_RESIST_F, 1.f)})}));
-                    break;
                 case sf::Keyboard::S:
                     _passives.up();
                     break;
@@ -255,12 +252,24 @@ void Scene_Play::handleEvents(const sf::Event &event)
                             {
                                 if(_map.getCell(_map.pointer())._action == ActionType::AT_ENEMY)
                                 {
-                                    std::cerr << "ACTION TO ENEMY" << std::endl;
+                                    for(unsigned int i = 0; i < _currentUnit->_base._weapon._enemy.size(); ++i)
+                                    {
+                                        _map.getCell(_map.pointer())._unit->applyModifications(_currentUnit->_base._weapon._enemy[i]._modifications);
+                                        _map.effect(_map.pointer(), _currentUnit->_base._weapon._enemy[i]);
+                                    }
+
+                                    setDataUnit(*_map.getCell(_map.pointer())._unit);
                                 }   
                                 else
                                 {
-                                    std::cerr << "ACTION TO ALLY" << std::endl;
-                                }   
+                                    for(unsigned int i = 0; i < _currentUnit->_base._weapon._ally.size(); ++i)
+                                    {
+                                        _map.getCell(_map.pointer())._unit->applyModifications(_currentUnit->_base._weapon._ally[i]._modifications);
+                                        _map.effect(_map.pointer(), _currentUnit->_base._weapon._ally[i]);
+                                    }
+
+                                    setDataUnit(*_map.getCell(_map.pointer())._unit);
+                                }
                                 
                                 _currentUnit->_active = false;
                                 _currentUnit->_base._sprite.setColor(sf::Color::White);
@@ -532,8 +541,8 @@ void Scene_Play::setDataUnit(const Unit& unit)
             {
                 str = std::to_string(it2->_modifications[i]._aValue) + " " + UA_Strings[it2->_modifications[i]._aTarjet] + " | ";
 
-                for(unsigned int j = 0; j < it2->_modifications[i]._aPro.size(); ++j) str +=  "+" + UA_Strings[it2->_modifications[i]._aPro[j].first];
-                for(unsigned int j = 0; j < it2->_modifications[i]._aCont.size(); ++j) str +=  "-" + UA_Strings[it2->_modifications[i]._aCont[j].first];
+                for(unsigned int j = 0; j < it2->_modifications[i]._aSum.size(); ++j) str +=  "+" + UA_Strings[it2->_modifications[i]._aSum[j].first];
+                for(unsigned int j = 0; j < it2->_modifications[i]._aRes.size(); ++j) str +=  "-" + UA_Strings[it2->_modifications[i]._aRes[j].first];
 
                 text.setString(str);
                 tmp.addText(sf::Vector2f(14, 14 + 14*i), text);
@@ -551,3 +560,9 @@ void Scene_Play::setDataUnit(const Unit& unit)
         ++it2;
     }
 }
+
+void Scene_Play::kill(const Unit& unit)
+{
+
+}
+

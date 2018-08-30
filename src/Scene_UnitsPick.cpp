@@ -118,23 +118,23 @@ void Scene_UnitsPick::loadUnitsToLists()
 
     while(it != _database.getUnits().end())
     {
-        Item tmp;
+        Item item;
 
         sf::Text text;
         text.setFont(_resources.Font("font1"));
         text.setCharacterSize(20);
 
         text.setString("Name: " + it->_name);
-        tmp.addText(sf::Vector2f(6, -6), text);
+        item.addText(sf::Vector2f(6, -6), text);
 
         text.setString("Weapon: " + it->_weapon._name);
-        tmp.addText(sf::Vector2f(6, 4), text);
+        item.addText(sf::Vector2f(6, 4), text);
 
-        tmp.addAnimatedSprite(sf::Vector2f(120, 10), it->_sprite, "idle");
+        item.addAnimatedSprite(sf::Vector2f(120, 10), it->_sprite, "idle");
 
         for(unsigned int i = 0; i < _unitsLists.size(); ++i)
         {
-            _unitsLists[i].add(tmp);
+            _unitsLists[i].add(item);
         }
 
         ++it;

@@ -197,24 +197,25 @@ void Map::moveUnit(Unit* unit, const Coord& coord)
         unit->_base._sprite.setPosition(_mapRect.left + coord.x*_tileSize.x, _mapRect.top + coord.y*_tileSize.y);
     }
 }
-/*
+
 void Map::effect(const Coord& coord, Effect& effect)
 {
+    effect._sprite.setScale(sf::Vector2f(_tileSize.x/64, _tileSize.y/64));
+    effect._sprite.setActiveAnimation("effect");
+
     for(unsigned int i = 0; i < effect._area.size(); ++i)
     {
         Coord tarjet = coord + effect._area[i];
-        if(correctCoord(tarjet) && !_map[tarjet.x][tarjet.y].empty())
+        if(correctCoord(tarjet))
         {
-            for(unsigned int j = 0; j < effect._modifications.size(); ++j) _map[tarjet.x][tarjet.y]._unit->applyModification(effect._modifications[j]);
+            effect._sprite.setPosition(_mapRect.left + tarjet.x*_tileSize.x, _mapRect.top + tarjet.y*_tileSize.y);
+            _effects.insert(_effects.end(), &effect._sprite);
         }
     }
 
-    effect._effect.setPosition(_mapRect.left + coord.x*_tileSize.x, _mapRect.top + coord.y*_tileSize.y);
-    effect._effect.setScale(sf::Vector2f(_tileSize.x/64, _tileSize.y/64));
-    effect._effect.setActiveAnimation("effect");
-    _effects.insert(_effects.end(), &effect._effect);
+    effect._sound.play();
 }
-*/
+
 void Map::update(const sf::Time deltatime)
 {
     if(_mapLoaded)

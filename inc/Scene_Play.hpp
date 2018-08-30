@@ -52,6 +52,8 @@ private:
     void initPhase(unsigned int team);
     void setDataUnit(const Unit& unit);
 
+    void kill(const Unit& unit);
+
     /* DATA */
     MapData _mapData;
     Map _map;

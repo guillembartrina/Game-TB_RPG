@@ -10,26 +10,29 @@
 #include "Weapon.hpp"
 #include "Unit.hpp"
 #include "Map.hpp"
+#include "Effect.hpp"
 
 class Database
 {
 public:
 
-    Database();
+    Database(Resources& resources);
     ~Database();
 
-    void load(Resources& resources);
+    void load();
 
-    void loadWeapons(Resources& resources);
-    void loadUnits(Resources& resources);
-    void loadMaps(Resources& resources);
+    void loadWeapons();
+    void loadUnits();
+    void loadMaps();
 
     std::vector<UnitData>& getUnits();
     std::vector<MapData>& getMaps();
 
-    void printWeapons();
-    void printUnits();
-    void printMaps();
+    void printWeapons() const;
+    void printUnits() const;
+    void printMaps() const;
+
+    Effect getEffect(PredefinedEffect id, int value);
 
 private:
 
@@ -37,6 +40,8 @@ private:
     sf::Color hsv(int hue, float sat, float val);
 
     /* DATA */
+    Resources& resources;
+
     std::vector<Weapon> _weapons;
     std::vector<UnitData> _units;
     std::vector<MapData> _maps;

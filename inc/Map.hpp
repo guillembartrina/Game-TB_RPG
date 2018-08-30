@@ -69,7 +69,7 @@ public:
 
     void moveUnit(Unit* unit, const Coord& coord);
 
-    //void effect(const Coord& coord, Effect& effect);
+    void effect(const Coord& coord, Effect& effect);
 
     void update(const sf::Time deltatime);
 

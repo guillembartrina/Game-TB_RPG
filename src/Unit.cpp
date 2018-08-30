@@ -51,8 +51,15 @@ void Unit::applyModification(const Modification& modification)
     {
         int res = modification._aValue;
 
-        for(unsigned int i = 0; i < modification._aPro.size(); ++i) res += _attributes[modification._aPro[i].first] * modification._aPro[i].second;
-        for(unsigned int i = 0; i < modification._aCont.size(); ++i) res -= _attributes[modification._aCont[i].first] * modification._aCont[i].second;
+        for(unsigned int i = 0; i < modification._aSum.size(); ++i) res += _attributes[modification._aSum[i].first] * modification._aSum[i].second;
+        for(unsigned int i = 0; i < modification._aRes.size(); ++i) res -= _attributes[modification._aRes[i].first] * modification._aRes[i].second;
+
+        if(!modification._aInvert)
+        {
+            if(modification._aValue == 0) res = 0;
+            else if(modification._aValue > 0 && res < 0) res = 0;
+            else if(modification._aValue < 0 && res > 0) res = 0;
+        }
 
         if(modification._aRelative)
         {
@@ -70,6 +77,14 @@ void Unit::applyModification(const Modification& modification)
     {
         _states[modification._sTarjet] = modification._sValue;
         if(modification._permanent) _baseStates[modification._sTarjet] = modification._sValue;
+    }
+}
+
+void Unit::applyModifications(const std::vector<Modification>& modifications)
+{
+    for(unsigned int i = 0; i < modifications.size(); ++i)
+    {
+        applyModification(modifications[i]);
     }
 }
 

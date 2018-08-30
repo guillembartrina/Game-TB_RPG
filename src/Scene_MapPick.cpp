@@ -92,27 +92,27 @@ void Scene_MapPick::loadMapsToList()
 
     while(it != _database.getMaps().end())
     {
-        Item tmp;
+        Item item;
 
         sf::Text text;
         text.setFont(_resources.Font("font1"));
         text.setCharacterSize(20);
 
         text.setString("Name: " + it->_name);
-        tmp.addText(sf::Vector2f(6, -6), text);
+        item.addText(sf::Vector2f(6, -6), text);
 
         text.setString("Teams: " + std::to_string(it->_teams.size()));
-        tmp.addText(sf::Vector2f(6, 4), text);
+        item.addText(sf::Vector2f(6, 4), text);
 
         for(unsigned int i = 0; i < it->_teams.size(); ++i)
         {
             text.setString(" - Team<" + std::to_string(i+1) +  ">: " + std::to_string(it->_teams[i].size()));
-            tmp.addText(sf::Vector2f(6, 4 + 10*(i+1)), text);
+            item.addText(sf::Vector2f(6, 4 + 10*(i+1)), text);
         }
 
-        tmp.addSprite(sf::Vector2f(115, 20), it->_preview);
+        item.addSprite(sf::Vector2f(115, 20), it->_preview);
 
-        _mapList.add(tmp);
+        _mapList.add(item);
 
         ++it;
     }

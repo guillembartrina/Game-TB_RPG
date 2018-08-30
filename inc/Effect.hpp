@@ -27,7 +27,7 @@ public:
 
     std::vector<Modification> _modifications;
 
-    AnimatedSprite _effect;
+    AnimatedSprite _sprite;
     sf::Sound _sound;
 };
 

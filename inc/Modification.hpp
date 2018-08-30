@@ -12,7 +12,7 @@ class Modification
 public:
 
     Modification();
-    Modification(UnitAttribute tarjet, bool relative, int value, bool permanent, std::vector<std::pair<UnitAttribute, float>> pro, std::vector<std::pair<UnitAttribute, float>> cont);
+    Modification(UnitAttribute tarjet, bool relative, int value, bool invert, bool permanent, std::vector<std::pair<UnitAttribute, float>> sum, std::vector<std::pair<UnitAttribute, float>> res);
     Modification(UnitState tarjet, bool value, bool permanent);
     ~Modification();
 
@@ -22,8 +22,10 @@ public:
     bool _aRelative;
     int _aValue;
 
-    std::vector<std::pair<UnitAttribute, float>> _aPro;
-    std::vector<std::pair<UnitAttribute, float>> _aCont;
+    bool _aInvert;
+
+    std::vector<std::pair<UnitAttribute, float>> _aSum;
+    std::vector<std::pair<UnitAttribute, float>> _aRes;
 
     bool _modStates;
 

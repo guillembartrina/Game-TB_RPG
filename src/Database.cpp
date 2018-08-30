@@ -1,6 +1,6 @@
 #include "Database.hpp"
 
-Database::Database()
+Database::Database(Resources& resources) : resources(resources)
 {
     _weaponsLoaded = false;
     _unitsLoaded = false;
@@ -9,13 +9,14 @@ Database::Database()
 
 Database::~Database() {}
 
-void Database::load(Resources& resources)
+void Database::load()
 {
-    loadUnits(resources);
-    loadMaps(resources);
+    loadWeapons();
+    loadUnits();
+    loadMaps();
 }
 
-void Database::loadWeapons(Resources& resources)
+void Database::loadWeapons()
 {
     if(_weaponsLoaded) return;
 
@@ -54,39 +55,19 @@ void Database::loadWeapons(Resources& resources)
             }
         }
 
-        /*
-
         _weapons[i]._tarjetsEnemy = false;
 
         if(data["Weapons"][i]["enemy"]["tarjetsEnemy"].as_bool())
         {
             _weapons[i]._tarjetsEnemy = true;
 
-            for(int j = 0; j < DamageType::DT_ELEMS; ++j)
+            tmp = data["Weapons"][i]["enemy"]["effects"].size();
+
+            _weapons[i]._enemy = std::vector<Effect>(tmp);
+
+            for(int j = 0; j < tmp; ++j)
             {
-                if(data["Weapons"][i]["enemy"]["enemy"][j].as_int() != 0)
-                {
-                    Effect effect;
-                    effect._area = {Coord(0, 0)};
-
-                    switch(j)
-                    {
-                        case DamageType::DT_F:
-                            effect._modifications = {Modification(UnitAttribute::UA_HP, true, data["Weapons"][i]["enemy"]["enemy"][j].as_int(), true, {}, {std::make_pair(UnitAttribute::UA_RESIST_F, 1.f)})};
-                            break;
-                        case DamageType::DT_M:
-                            effect._modifications = {Modification(UnitAttribute::UA_HP, true, data["Weapons"][i]["enemy"]["enemy"][j].as_int(), true, {}, {std::make_pair(UnitAttribute::UA_RESIST_M, 1.f)})};
-                            break;
-                        case DamageType::DT_T:
-                        effect._modifications = {Modification(UnitAttribute::UA_HP, true, data["Weapons"][i]["enemy"]["enemy"][j].as_int(), true, {}, {})};
-                            break;
-                    }
-
-                    effect._effect.addAnimation("effect", resources.Texture("attack"), 4, sf::Vector2u(64, 64), sf::seconds(0.1f), false);
-                    effect._effect.setActiveAnimation("effect");
-
-                    _weapons[i]._enemy.push_back(effect);
-                }
+                _weapons[i]._enemy[j] = getEffect(PredefinedEffect(data["Weapons"][i]["enemy"]["effects"][j][0].as_int()), data["Weapons"][i]["enemy"]["effects"][j][1].as_int());
             }
         }
 
@@ -96,45 +77,24 @@ void Database::loadWeapons(Resources& resources)
         {
             _weapons[i]._tarjetsAlly = true;
 
-            for(int j = 0; j < DamageType::DT_ELEMS; ++j)
+            tmp = data["Weapons"][i]["ally"]["effects"].size();
+
+            _weapons[i]._ally = std::vector<Effect>(tmp);
+
+            for(int j = 0; j < tmp; ++j)
             {
-                if(data["Weapons"][i]["ally"]["ally"][j].as_int() != 0)
-                {
-                    Effect effect;
-                    effect._area = {Coord(0, 0)};
-                    switch(j)
-                    {
-                        case DamageType::DT_F:
-                            effect._modifications = {Modification(UnitAttribute::UA_HP, true, data["Weapons"][i]["ally"]["ally"][j].as_int(), true, {}, {std::make_pair(UnitAttribute::UA_RESIST_F, 1.f)})};
-                            break;
-                        case DamageType::DT_M:
-                            effect._modifications = {Modification(UnitAttribute::UA_HP, true, data["Weapons"][i]["ally"]["ally"][j].as_int(), true, {}, {std::make_pair(UnitAttribute::UA_RESIST_M, 1.f)})};
-                            break;
-                        case DamageType::DT_T:
-                        effect._modifications = {Modification(UnitAttribute::UA_HP, true, data["Weapons"][i]["ally"]["ally"][j].as_int(), true, {}, {})};
-                            break;
-                    }
-
-                    effect._effect.addAnimation("effect", resources.Texture("attack"), 4, sf::Vector2u(64, 64), sf::seconds(0.1f), false);
-                    effect._effect.setActiveAnimation("effect");
-
-                    effect._sound.setBuffer(resources.Sound("attack"));
-
-                    _weapons[i]._ally.push_back(effect);
-                }
+                _weapons[i]._ally[j] = getEffect(PredefinedEffect(data["Weapons"][i]["ally"]["effects"][j][0].as_int()), data["Weapons"][i]["ally"]["effects"][j][1].as_int());
             }
+
         }
 
-        */
     }
     _weaponsLoaded = true;
 }
 
-void Database::loadUnits(Resources& resources)
+void Database::loadUnits()
 {
     if(_unitsLoaded) return;
-
-    loadWeapons(resources);
 
     ifstream file("rsc/units.json");
     string page = "";
@@ -212,7 +172,7 @@ void Database::loadUnits(Resources& resources)
     _unitsLoaded = true;
 }
 
-void Database::loadMaps(Resources& resources)
+void Database::loadMaps()
 {
     if(_mapsLoaded) return;
 
@@ -299,9 +259,9 @@ std::vector<MapData>& Database::getMaps()
     return _maps;
 }
 
-void Database::printWeapons()
+void Database::printWeapons() const
 {
-    std::vector<Weapon>::iterator it = _weapons.begin();
+    std::vector<Weapon>::const_iterator it = _weapons.begin();
 
     std::cerr << "WEAPONS:" << std::endl;
 
@@ -351,9 +311,9 @@ void Database::printWeapons()
     }
 }
 
-void Database::printUnits()
+void Database::printUnits() const
 {
-    std::vector<UnitData>::iterator it = _units.begin();
+    std::vector<UnitData>::const_iterator it = _units.begin();
 
     std::cerr << "UNITS:" << std::endl;
 
@@ -371,7 +331,7 @@ void Database::printUnits()
         if(it->_byNameWeaponCompatibility.size() > 0)
         {
             std::cerr << ", Special:";
-            std::list<std::string>::iterator it2 = it->_byNameWeaponCompatibility.begin();
+            std::list<std::string>::const_iterator it2 = it->_byNameWeaponCompatibility.begin();
             while(it2 != it->_byNameWeaponCompatibility.end())
             {
                 std::cerr << " " << *it2;
@@ -390,7 +350,7 @@ void Database::printUnits()
         if(it->_specialMovementRange.size() > 0)
         {
             std::cerr << ", Special:";
-            std::vector<Coord>::iterator it4 = it->_specialMovementRange.begin();
+            std::vector<Coord>::const_iterator it4 = it->_specialMovementRange.begin();
             while(it4 != it->_specialMovementRange.end())
             {
                 std::cerr << " {" << it4->x << "," << it4->y << "}";
@@ -399,7 +359,7 @@ void Database::printUnits()
         }
         std::cerr << std::endl;
         std::cerr << "Attributes:" << std::endl;
-        std::vector<int>::iterator it5 = it->_attributes.begin();
+        std::vector<int>::const_iterator it5 = it->_attributes.begin();
         while(it5 != it->_attributes.end())
         {
             std::cerr << "    " << *it5 << std::endl;;
@@ -411,9 +371,9 @@ void Database::printUnits()
     }
 }
 
-void Database::printMaps()
+void Database::printMaps() const
 {
-    std::vector<MapData>::iterator it = _maps.begin();
+    std::vector<MapData>::const_iterator it = _maps.begin();
 
     std::cerr << "MAPS:" << std::endl;
 
@@ -435,6 +395,37 @@ void Database::printMaps()
         std::cerr << "-------------------------------------" << std::endl;
         ++it;
     }
+}
+
+Effect Database::getEffect(PredefinedEffect id, int value)
+{
+    Effect effect;
+
+    effect._area = {Coord(0, 0)};
+    effect._sprite.addAnimation("effect", resources.Texture("attack"), 4, sf::Vector2u(64, 64), sf::seconds(0.1f), false);
+    effect._sound = sf::Sound(resources.Sound("attack"));
+
+    Modification modification;
+
+    switch(id)
+    {
+        case PredefinedEffect::DAMAGE_F:
+            modification = Modification(UnitAttribute::UA_HP, true, -value, false, true, {std::make_pair(UnitAttribute::UA_RESIST_F, 1.f)}, {});
+            break;
+        case PredefinedEffect::DAMAGE_M:
+        modification = Modification(UnitAttribute::UA_HP, true, -value, false, true, {std::make_pair(UnitAttribute::UA_RESIST_M, 1.f)}, {});
+            break;
+        case PredefinedEffect::DAMAGE_T:
+        modification = Modification(UnitAttribute::UA_HP, true, -value, false, true, {}, {});
+            break;
+        case PredefinedEffect::HEAL:
+        modification = Modification(UnitAttribute::UA_HP, true, value, false, true, {}, {});
+            break;
+    }
+
+    effect._modifications = {modification};
+
+    return effect;
 }
 
 sf::Color Database::hsv(int hue, float sat, float val)

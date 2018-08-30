@@ -45,6 +45,7 @@ public:
     void init(const UnitData& unitData, int team, const Coord& position);
 
     void applyModification(const Modification& modification);
+    void applyModifications(const std::vector<Modification>& modifications);
 
     void update(TarjetTeam team);
 
