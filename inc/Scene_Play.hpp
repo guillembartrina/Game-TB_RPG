@@ -2,6 +2,7 @@
 #define SCENE__PLAY_HPP
 
 #include <list>
+#include <assert.h>
 
 #include "Scene.hpp"
 
@@ -31,7 +32,7 @@ class Scene_Play : public Scene
 {
 public:
 
-    Scene_Play(SceneHandler& sceneHandler, Resources& resources, MapData* mapData, std::vector<std::list<UnitData>>* unitsData);
+    Scene_Play(SceneHandler& sceneHandler, Resources& resources, MapData* mapData, std::vector<std::vector<UnitData>>* unitsData);
     ~Scene_Play();
 
     void init();
@@ -52,13 +53,15 @@ private:
     void initPhase(unsigned int team);
     void setDataUnit(const Unit& unit);
 
-    void kill(const Unit& unit);
+    void effect(const Coord& coord, Effect& effect);
+
+    void kill(Unit* unit);
 
     /* DATA */
     MapData _mapData;
     Map _map;
 
-    std::vector<std::list<UnitData>> _unitsData;
+    std::vector<std::vector<UnitData>> _unitsData;
     std::vector<std::vector<Unit>> _teams;
 
     /* VARS */

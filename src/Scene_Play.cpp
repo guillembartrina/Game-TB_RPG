@@ -1,7 +1,7 @@
 
 #include "Scene_Play.hpp"
 
-Scene_Play::Scene_Play(SceneHandler &sceneHandler, Resources &resources, MapData *mapData, std::vector<std::list<UnitData>> *unitsData) : Scene(sceneHandler, resources), _mapData(*mapData), _unitsData(*unitsData) {}
+Scene_Play::Scene_Play(SceneHandler &sceneHandler, Resources &resources, MapData *mapData, std::vector<std::vector<UnitData>> *unitsData) : Scene(sceneHandler, resources), _mapData(*mapData), _unitsData(*unitsData) {}
 
 Scene_Play::~Scene_Play()
 {
@@ -76,36 +76,29 @@ void Scene_Play::init()
     t_infoFinish.setFillColor(sf::Color::Red);
     t_infoFinish.setPosition(600, 700);
 
-    
-
     _passives = List(sf::FloatRect(430, 627, 140, 160), 3);
     _abilities = List(sf::FloatRect(600, 625, 175, 165), 2, 1);
 
     _map = Map(sf::FloatRect(10, 10, 780, 600));
 
-    int numTeams = _unitsData.size();
+    _teams = std::vector<std::vector<Unit>>(_unitsData.size());
 
-    _teams = std::vector<std::vector<Unit>>(numTeams);
-
-    for (int i = 0; i < numTeams; ++i)
+    for(unsigned int i = 0; i < _unitsData.size(); ++i)
     {
         _teams[i] = std::vector<Unit>(_unitsData[i].size());
 
-        int j = 0;
-
-        std::list<UnitData>::iterator it = _unitsData[i].begin();
-        while (it != _unitsData[i].end())
+        for(unsigned int j = 0; j < _unitsData[i].size(); ++j)
         {
-            if (_map.correctCoord(_mapData._teams[i][j])) _teams[i][j].init(*it, i, _mapData._teams[i][j]);
-            else std::cerr << "ERROR: Bad <" << it->_name << "> unit position coord" << std::endl;
-            ++j;
-            ++it;
+            assert(_map.correctCoord(_mapData._teams[i][j]) && "ERROR: Bad unit position coord");
+
+            _teams[i][j].init(_unitsData[i][j], i, _mapData._teams[i][j]);
         }
     }
 
     _map.setMap(_resources, _mapData, _teams);
 
     _resources.Music("ambient").setLoop(true);
+    _resources.Music("ambient").setVolume(20.f);
     _resources.Music("ambient").play();
 
     _selected = false;
@@ -141,7 +134,7 @@ void Scene_Play::handleEvents(const sf::Event &event)
                             if (_map.pointer().y > 0)
                             {
                                 --_map.pointer().y;
-                                if(!_map.getCell(_map.pointer()).empty()) setDataUnit(*_map.getCell(_map.pointer())._unit);
+                                if(!_map.getPointerCell().empty()) setDataUnit(*_map.getPointerCell()._unit);
                             }
                         }
                             break;
@@ -161,7 +154,7 @@ void Scene_Play::handleEvents(const sf::Event &event)
                             if (_map.pointer().x > 0)
                             {
                                 --_map.pointer().x;
-                                if(!_map.getCell(_map.pointer()).empty()) setDataUnit(*_map.getCell(_map.pointer())._unit);
+                                if(!_map.getPointerCell().empty()) setDataUnit(*_map.getPointerCell()._unit);
                             }
                         }
                             break;
@@ -181,7 +174,7 @@ void Scene_Play::handleEvents(const sf::Event &event)
                             if (_map.pointer().x < int(_map._WCells) - 1)
                             {
                                 ++_map.pointer().x;
-                                if(!_map.getCell(_map.pointer()).empty()) setDataUnit(*_map.getCell(_map.pointer())._unit);
+                                if(!_map.getPointerCell().empty()) setDataUnit(*_map.getPointerCell()._unit);
                             }
                         }
                             break;
@@ -201,7 +194,7 @@ void Scene_Play::handleEvents(const sf::Event &event)
                             if (_map.pointer().y < int(_map._HCells) - 1)
                             {
                                 ++_map.pointer().y;
-                                if(!_map.getCell(_map.pointer()).empty()) setDataUnit(*_map.getCell(_map.pointer())._unit);
+                                if(!_map.getPointerCell().empty()) setDataUnit(*_map.getPointerCell()._unit);
                             }
                         }
                             break;
@@ -216,28 +209,31 @@ void Scene_Play::handleEvents(const sf::Event &event)
                     {
                         case TurnPhase::TP_BEGIN:
                         {
-                            if(!_map.getCell(_map.pointer()).empty() && _map.getCell(_map.pointer())._unit->_team == _currentTeam && _map.getCell(_map.pointer())._unit->_active)
+                            if(!_map.getPointerCell().empty())
                             {
-                                bool tarjets = !_map.getCell(_map.pointer())._unit->_states[UnitState::FIXED] && _map.selectCell(_map.pointer());
-                                if(tarjets)
+                                if(_map.getPointerCell()._unit->_active && _map.getPointerCell()._unit->_team == _currentTeam)
                                 {
-                                    _selected = true;
-                                    _currentUnit = _map.getCell(_map.selector())._unit;
-                                    _currentTurnPhase = TurnPhase::TP_SELECTED;
-                                }
-                                else
-                                {
-                                    _map.eraseSelection();
-                                    _map.selectCell(_map.pointer(), false);
-                                    _currentTurnPhase = TurnPhase::TP_ACTION;
-                                    std::cerr << "No movement tarjets" << std::endl;
+                                    bool tarjets = !_map.getPointerCell()._unit->_states[UnitState::FIXED] && _map.selectCell(_map.pointer());
+                                    if(tarjets)
+                                    {
+                                        _selected = true;
+                                        _currentUnit = _map.getSelectorCell()._unit;
+                                        _currentTurnPhase = TurnPhase::TP_SELECTED;
+                                    }
+                                    else
+                                    {
+                                        _map.eraseSelection();
+                                        _map.selectCell(_map.pointer(), false);
+                                        _currentTurnPhase = TurnPhase::TP_ACTION;
+                                        std::cerr << "INFO: No movement tarjets" << std::endl;
+                                    }
                                 }
                             }
                         }
                             break;
                         case TurnPhase::TP_SELECTED:
                         {
-                            if(_map.getCell(_map.pointer())._action == ActionType::AT_MOVE)
+                            if(_map.getPointerCell()._action == ActionType::AT_MOVE)
                             {
                                 _map.eraseSelection();
                                 _map.moveUnit(_currentUnit, _map.pointer());
@@ -248,27 +244,27 @@ void Scene_Play::handleEvents(const sf::Event &event)
                             break;
                         case TurnPhase::TP_ACTION:
                         {
-                            if(_map.getCell(_map.pointer())._action != ActionType::AT_NONE)
+                            if(_map.getPointerCell()._action != ActionType::AT_NONE)
                             {
-                                if(_map.getCell(_map.pointer())._action == ActionType::AT_ENEMY)
+                                Weapon& weapon = _currentUnit->_base._weapon;
+                                
+                                if(_map.getPointerCell()._action == ActionType::AT_ENEMY)
                                 {
-                                    for(unsigned int i = 0; i < _currentUnit->_base._weapon._enemy.size(); ++i)
+                                    for(unsigned int i = 0; i < weapon._enemy.size(); ++i)
                                     {
-                                        _map.getCell(_map.pointer())._unit->applyModifications(_currentUnit->_base._weapon._enemy[i]._modifications);
-                                        _map.effect(_map.pointer(), _currentUnit->_base._weapon._enemy[i]);
+                                        effect(_map.pointer(), weapon._enemy[i]);
                                     }
 
-                                    setDataUnit(*_map.getCell(_map.pointer())._unit);
+                                    setDataUnit(*_map.getPointerCell()._unit);
                                 }   
                                 else
                                 {
-                                    for(unsigned int i = 0; i < _currentUnit->_base._weapon._ally.size(); ++i)
+                                    for(unsigned int i = 0; i < weapon._ally.size(); ++i)
                                     {
-                                        _map.getCell(_map.pointer())._unit->applyModifications(_currentUnit->_base._weapon._ally[i]._modifications);
-                                        _map.effect(_map.pointer(), _currentUnit->_base._weapon._ally[i]);
+                                        effect(_map.pointer(), weapon._ally[i]);
                                     }
 
-                                    setDataUnit(*_map.getCell(_map.pointer())._unit);
+                                    setDataUnit(*_map.getPointerCell()._unit);
                                 }
                                 
                                 _currentUnit->_active = false;
@@ -375,7 +371,7 @@ void Scene_Play::update(const sf::Time deltatime)
         if(_teams[_currentTeam][i]._active) _teams[_currentTeam][i]._base._sprite.updateAnimation(deltatime);
     }
 
-    t_title.setString(std::to_string(_map.getCell(_map.pointer())._checked) + " " + std::to_string(_map.getCell(_map.pointer())._distance) + " " + std::to_string(_map.getCell(_map.pointer())._action));
+    t_title.setString(std::to_string(_map.getPointerCell()._checked) + " " + std::to_string(_map.getPointerCell()._distance) + " " + std::to_string(_map.getPointerCell()._action));
 }
 
 void Scene_Play::draw(sf::RenderWindow& window) const
@@ -415,12 +411,15 @@ void Scene_Play::initPhase(unsigned int team)
     {
         for(unsigned int j = 0; j < _teams[i].size(); ++j)
         {
-            _teams[i][j]._active = false;
-            _teams[i][j]._base._sprite.setColor(sf::Color::White);
-            _teams[i][j]._base._sprite.stopAnimation();
+            if(_teams[i][j]._alive)
+            {
+                _teams[i][j]._active = false;
+                _teams[i][j]._base._sprite.setColor(sf::Color::White);
+                _teams[i][j]._base._sprite.stopAnimation();
 
-            if(i == team) _teams[i][j].update(TarjetTeam::TT_ALLY);
-            else _teams[i][j].update(TarjetTeam::TT_ENEMY);
+                if(i == team) _teams[i][j].update(TarjetTeam::TT_ALLY);
+                else _teams[i][j].update(TarjetTeam::TT_ENEMY);
+            }
         }
     }
 
@@ -513,6 +512,24 @@ void Scene_Play::setDataUnit(const Unit& unit)
 
     _passives.clear();
 
+    for(unsigned int i = 0; i < unit._states.size(); ++i)
+    {
+        if(unit._states[i])
+        {
+            Item tmp;
+
+            sf::Text text;
+            text.setFont(_resources.Font("font1"));
+            text.setCharacterSize(50);
+
+            text.setString(US_Strings[i]);
+            tmp.addText(sf::Vector2f(14, 10), text);
+
+            _passives.add(tmp);
+        }
+    }
+
+
     std::list<Passive>::const_iterator it2 = unit._passives.begin();
     while(it2 != unit._passives.end())
     {
@@ -561,8 +578,25 @@ void Scene_Play::setDataUnit(const Unit& unit)
     }
 }
 
-void Scene_Play::kill(const Unit& unit)
+void  Scene_Play::effect(const Coord& tarjet, Effect& effect)
 {
+    for(unsigned int i = 0; i < effect._area.size(); ++i)
+    {
+        Coord coord = tarjet + effect._area[i];
 
+        if(_map.correctCoord(coord) && !_map.getCell(coord).empty())
+        {
+            _map.getCell(coord)._unit->applyModifications(effect._modifications);
+        }
+    }
+
+    _map.effect(tarjet, effect);
+}
+
+void Scene_Play::kill(Unit* unit)
+{
+    unit->_alive = false;
+    unit->_active = false;
+    _map.getCell(unit->_position)._unit = nullptr;
 }
 

@@ -45,15 +45,17 @@ void Scene_UnitsPick::handleEvents(const sf::Event& event)
                     {
                         if(_currentTeam == _unitsLists.size()-1)
                         {
-                            int numTeams = _mapData->_teams.size();
-                            std::vector<std::list<UnitData>> teams(numTeams);
-                            for(int i = 0; i < numTeams; ++i)
+                            std::vector<std::vector<UnitData>> teams(_mapData->_teams.size());
+                            for(unsigned int i = 0; i < _mapData->_teams.size(); ++i)
                             {
+                                teams[i] = std::vector<UnitData>(_unitsLists[i].getPicked().size());
+                                int j = 0;
                                 std::list<std::list<Item>::iterator>::iterator it = _unitsLists[i].getPicked().begin();
                                 while(it != _unitsLists[i].getPicked().end())
                                 {
-                                    teams[i].insert(teams[i].end(), _database.getUnits().at((*it)->_id));
+                                    teams[i][j] = _database.getUnits().at((*it)->_id);
                                     ++it;
+                                    ++j;
                                 }
                             }
 

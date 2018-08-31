@@ -103,6 +103,7 @@ void Map::setMap(Resources& resources, const MapData& mapData, std::vector<std::
         for(unsigned int j = 0; j < teams[i].size(); ++j)
         {
             Coord pos = teams[i][j]._position;
+
             if(_map[pos.x][pos.y].empty() && terrainPass(teams[i][j]._base._movementType, _map[pos.x][pos.y]._type).first)
             {
                 _map[pos.x][pos.y]._unit = &teams[i][j];
@@ -112,7 +113,10 @@ void Map::setMap(Resources& resources, const MapData& mapData, std::vector<std::
                 teams[i][j]._base._sprite.setActiveAnimation("idle");
                 teams[i][j]._base._sprite.stopAnimation();
             }
-            else std::cerr << "ERROR: non empty or not passable cell for unit <" << teams[i][j]._base._name << ">" << std::endl;
+            else
+            {
+                std::cerr << "ERROR: non empty or not passable cell for unit <" << teams[i][j]._base._name << ">" << std::endl;
+            }
         }
     }
 
@@ -132,11 +136,21 @@ Coord& Map::pointer()
     return _pointer;
 }
 
+Cell& Map::getPointerCell()
+{
+    return _map[_pointer.x][_pointer.y];
+}
+
 Coord& Map::selector()
 {
     _updateSelector = true;
 
     return _selector;
+}
+
+Cell& Map::getSelectorCell()
+{
+    return _map[_selector.x][_selector.y];
 }
 
 bool Map::selectCell(const Coord& coord, bool movement)
@@ -181,7 +195,7 @@ void Map::eraseSelection()
 
 bool Map::correctCoord(const Coord& coord)
 {
-    if(coord.x >= 0 && coord.x < int(_WCells) && coord.y >= 0 && coord.y < int(_HCells)) return true;
+    if(coord.x >= 0 && unsigned(coord.x) < _WCells && coord.y >= 0 && unsigned(coord.y) < _HCells) return true;
 
     return false;
 }
@@ -416,7 +430,7 @@ bool Map::bfsAction(const Coord& origin, unsigned int team, bool tarjetEnemy, bo
                 if(cell._distance <= unsigned(maxRange))
                 {
                     seg = true;
-                    if(!cell.empty())
+                    if(!cell.empty() && range.find(cell._distance) != range.end())
                     {
                         if(tarjetEnemy && cell._unit->_team != team)
                         {

@@ -402,8 +402,6 @@ Effect Database::getEffect(PredefinedEffect id, int value)
     Effect effect;
 
     effect._area = {Coord(0, 0)};
-    effect._sprite.addAnimation("effect", resources.Texture("attack"), 4, sf::Vector2u(64, 64), sf::seconds(0.1f), false);
-    effect._sound = sf::Sound(resources.Sound("attack"));
 
     Modification modification;
 
@@ -411,15 +409,23 @@ Effect Database::getEffect(PredefinedEffect id, int value)
     {
         case PredefinedEffect::DAMAGE_F:
             modification = Modification(UnitAttribute::UA_HP, true, -value, false, true, {std::make_pair(UnitAttribute::UA_RESIST_F, 1.f)}, {});
+            effect._sprite.addAnimation("effect", resources.Texture("attack"), 4, sf::Vector2u(64, 64), sf::seconds(0.1f), false);
+            effect._sound = sf::Sound(resources.Sound("attack"));
             break;
         case PredefinedEffect::DAMAGE_M:
-        modification = Modification(UnitAttribute::UA_HP, true, -value, false, true, {std::make_pair(UnitAttribute::UA_RESIST_M, 1.f)}, {});
+            modification = Modification(UnitAttribute::UA_HP, true, -value, false, true, {std::make_pair(UnitAttribute::UA_RESIST_M, 1.f)}, {});
+            effect._sprite.addAnimation("effect", resources.Texture("attack"), 4, sf::Vector2u(64, 64), sf::seconds(0.1f), false);
+            effect._sound = sf::Sound(resources.Sound("attack"));
             break;
         case PredefinedEffect::DAMAGE_T:
-        modification = Modification(UnitAttribute::UA_HP, true, -value, false, true, {}, {});
+            modification = Modification(UnitAttribute::UA_HP, true, -value, false, true, {}, {});
+            effect._sprite.addAnimation("effect", resources.Texture("attack"), 4, sf::Vector2u(64, 64), sf::seconds(0.1f), false);
+            effect._sound = sf::Sound(resources.Sound("attack"));
             break;
         case PredefinedEffect::HEAL:
-        modification = Modification(UnitAttribute::UA_HP, true, value, false, true, {}, {});
+            modification = Modification(UnitAttribute::UA_HP, true, value, false, true, {}, {});
+            effect._sprite.addAnimation("effect", resources.Texture("heal"), 4, sf::Vector2u(64, 64), sf::seconds(0.1f), false);
+            effect._sound = sf::Sound(resources.Sound("heal"));
             break;
     }
 

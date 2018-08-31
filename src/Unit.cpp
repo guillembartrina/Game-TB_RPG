@@ -78,6 +78,36 @@ void Unit::applyModification(const Modification& modification)
         _states[modification._sTarjet] = modification._sValue;
         if(modification._permanent) _baseStates[modification._sTarjet] = modification._sValue;
     }
+
+    if(modification._modPassivesAdd)
+    {
+        for(unsigned int i = 0; i < modification._pAdd.size(); ++i)
+        {
+            _passives.insert(_passives.end(), modification._pAdd[i]);
+        }
+    }
+
+    if(modification._modPassivesDel)
+    {
+        if(modification._pDelAll)
+        {
+            _passives.clear();
+        }
+        else
+        {
+            for(unsigned int i = 0; i < modification._pDel.size(); ++i)
+            {
+                std::list<Passive>::iterator it = _passives.begin();
+                while(it != _passives.end())
+                {
+                    if(it->_name == modification._pDel[i])
+                    {
+                        it = _passives.erase(it);
+                    }
+                }
+            }
+        }
+    }
 }
 
 void Unit::applyModifications(const std::vector<Modification>& modifications)
@@ -100,7 +130,7 @@ void Unit::update(TarjetTeam team)
         {
             std::cerr << "APPLY: " << it->_name << ", turns: " << it->_turns << std::endl;
 
-            for(unsigned int i = 0; i < it->_modifications.size(); ++i) applyModification(it->_modifications[i]);
+            applyModifications(it->_modifications);
 
             if(it->_turns != -1)
             {

@@ -60,7 +60,9 @@ public:
 
     Cell& getCell(const Coord& coord);
     Coord& pointer();
+    Cell& getPointerCell();
     Coord& selector();
+    Cell& getSelectorCell();
 
     bool selectCell(const Coord& coord, bool movement = true);
     void eraseSelection();

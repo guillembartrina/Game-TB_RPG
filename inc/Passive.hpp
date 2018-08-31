@@ -7,6 +7,8 @@
 
 #include "Enums.hpp"
 
+class Modification; //DELETE?
+
 class Passive
 {
 public:
@@ -18,6 +20,7 @@ public:
     std::string _name;
     int _turns;
     std::set<TarjetTeam> _triggerTurns;
+    //bool _stackable;??
 
 
     std::vector<Modification> _modifications;
