@@ -30,7 +30,7 @@ public:
     bool _tarjetsAlly;
     std::vector<Effect> _ally;
     
-    //Effects, abilities, bonuses agaist, requeriments
+    //abilities, bonuses agaist, requeriments
 
 };
 

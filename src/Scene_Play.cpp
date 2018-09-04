@@ -138,6 +138,9 @@ void Scene_Play::handleEvents(const sf::Event &event)
                             }
                         }
                             break;
+                        case TurnPhase::TP_ABILITY:
+                            _abilities.up();
+                            break;
                         default:
                             break;
                     }
@@ -197,6 +200,9 @@ void Scene_Play::handleEvents(const sf::Event &event)
                                 if(!_map.getPointerCell().empty()) setDataUnit(*_map.getPointerCell()._unit);
                             }
                         }
+                            break;
+                        case TurnPhase::TP_ABILITY:
+                            _abilities.down();
                             break;
                         default:
                             break;
@@ -279,6 +285,10 @@ void Scene_Play::handleEvents(const sf::Event &event)
                             break;
                         case TurnPhase::TP_ABILITY:
                         {
+                            if(_abilities.allPicked())
+                            {
+                                std::cerr << "PICKED" << std::endl;
+                            }
                         }
                             break;
                         default:

@@ -2,6 +2,7 @@
 #define DATABASE_HPP
 
 #include <list>
+#include <assert.h>
 
 #include "jute.hpp"
 
@@ -24,6 +25,7 @@ public:
     void loadWeapons();
     void loadUnits();
     void loadMaps();
+    void loadPassives();
 
     std::vector<UnitData>& getUnits();
     std::vector<MapData>& getMaps();
@@ -38,6 +40,7 @@ private:
 
     /* F */
     sf::Color hsv(int hue, float sat, float val);
+    void getModification(jute::jValue source, Modification& modification);
 
     /* DATA */
     Resources& resources;
@@ -45,11 +48,13 @@ private:
     std::vector<Weapon> _weapons;
     std::vector<UnitData> _units;
     std::vector<MapData> _maps;
+    std::vector<Passive> _passives;
 
     /* VARS */
     bool _weaponsLoaded;
     bool _unitsLoaded;
     bool _mapsLoaded;
+    bool _passivesLoaded;
 };
 
 #endif

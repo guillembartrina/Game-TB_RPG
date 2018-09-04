@@ -128,7 +128,7 @@ void Unit::update(TarjetTeam team)
     {
         if(it->_triggerTurns.find(team) != it->_triggerTurns.end())
         {
-            std::cerr << "APPLY: " << it->_name << ", turns: " << it->_turns << std::endl;
+            //std::cerr << "APPLY: " << it->_name << ", turns: " << it->_turns << std::endl;
 
             applyModifications(it->_modifications);
 

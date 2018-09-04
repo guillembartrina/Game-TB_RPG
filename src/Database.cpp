@@ -11,6 +11,7 @@ Database::~Database() {}
 
 void Database::load()
 {
+    loadPassives();
     loadWeapons();
     loadUnits();
     loadMaps();
@@ -36,22 +37,25 @@ void Database::loadWeapons()
         _weapons[i]._name = data["Weapons"][i]["name"].as_string(); //WARN: same names
         _weapons[i]._type = WeaponType(data["Weapons"][i]["type"].as_int());
 
-        int tmp;
+        jute::jValue tmpValue;
+        int tmpSize;
 
-        tmp = data["Weapons"][i]["range"]["range"].size();
+        tmpValue = data["Weapons"][i]["range"]["range"];
+        tmpSize = tmpValue.size();
 
-        for(int j = 0; j < tmp; ++j)
+        for(int j = 0; j < tmpSize; ++j)
         {
-            _weapons[i]._range.insert(_weapons[i]._range.end(), data["Weapons"][i]["range"]["range"][j].as_int());
+            _weapons[i]._range.insert(_weapons[i]._range.end(), tmpValue[j].as_int());
         }
 
         if(data["Weapons"][i]["range"]["specialRange"].as_bool())
         {
-            tmp = data["Weapons"][i]["range"]["specialRangeCoords"].size();
+            tmpValue = data["Weapons"][i]["range"]["specialRangeCoords"];
+            tmpSize = tmpValue.size();
 
-            for(int j = 0; j < tmp; ++j)
+            for(int j = 0; j < tmpSize; ++j)
             {
-                _weapons[i]._specialRange.insert(_weapons[i]._specialRange.end(), Coord(data["Weapons"][i]["range"]["specialRangeCoords"][j][0].as_int(), data["Weapons"][i]["range"]["specialRangeCoords"][j][1].as_int()));
+                _weapons[i]._specialRange.insert(_weapons[i]._specialRange.end(), Coord(tmpValue[j][0].as_int(), tmpValue[j][1].as_int()));
             }
         }
 
@@ -61,13 +65,39 @@ void Database::loadWeapons()
         {
             _weapons[i]._tarjetsEnemy = true;
 
-            tmp = data["Weapons"][i]["enemy"]["effects"].size();
+            tmpValue = data["Weapons"][i]["enemy"];
 
-            _weapons[i]._enemy = std::vector<Effect>(tmp);
+            _weapons[i]._enemy = std::vector<Effect>(tmpValue["effects"].size() + tmpValue["otherEffects"].size());
 
-            for(int j = 0; j < tmp; ++j)
+            tmpSize = tmpValue["effects"].size();
+
+            for(int j = 0; j < tmpSize; ++j)
             {
-                _weapons[i]._enemy[j] = getEffect(PredefinedEffect(data["Weapons"][i]["enemy"]["effects"][j][0].as_int()), data["Weapons"][i]["enemy"]["effects"][j][1].as_int());
+                _weapons[i]._enemy[j] = getEffect(PredefinedEffect(tmpValue["effects"][j][0].as_int()), tmpValue["effects"][j][1].as_int());
+            }
+
+            int offset = tmpSize;
+            tmpSize = tmpValue["otherEffects"].size();
+
+            for(int j = 0; j < tmpSize; ++j)
+            {
+                int area = tmpValue["otherEffects"][j]["area"].size();
+
+                _weapons[i]._enemy[j + offset]._area = std::vector<Coord>(area);
+
+                for(int k = 0; k < area; ++k) _weapons[i]._enemy[j + offset]._area[k] = Coord(tmpValue["otherEffects"][j]["area"][k][0].as_int(), tmpValue["otherEffects"][j]["area"][k][1].as_int());
+
+                int modifications = tmpValue["otherEffects"][j]["modifications"].size();
+
+                _weapons[i]._enemy[j + offset]._modifications = std::vector<Modification>(modifications);
+
+                for(int k = 0; k < modifications; ++k)
+                {
+                    getModification(tmpValue["otherEffects"][j]["modifications"][k], _weapons[i]._enemy[j + offset]._modifications[k]);
+                }
+
+                _weapons[i]._enemy[j + offset]._sprite.addAnimation("effect", resources.Texture(tmpValue["otherEffects"][j]["sprite"].as_string()), 4, sf::Vector2u(64, 64), sf::seconds(0.1f), false);
+                _weapons[i]._enemy[j + offset]._sound = sf::Sound(resources.Sound(tmpValue["otherEffects"][j]["sound"].as_string()));
             }
         }
 
@@ -77,13 +107,38 @@ void Database::loadWeapons()
         {
             _weapons[i]._tarjetsAlly = true;
 
-            tmp = data["Weapons"][i]["ally"]["effects"].size();
+            tmpValue = data["Weapons"][i]["ally"];
+            tmpSize = tmpValue["effects"].size();
 
-            _weapons[i]._ally = std::vector<Effect>(tmp);
+            _weapons[i]._ally = std::vector<Effect>(tmpSize);
 
-            for(int j = 0; j < tmp; ++j)
+            for(int j = 0; j < tmpSize; ++j)
             {
-                _weapons[i]._ally[j] = getEffect(PredefinedEffect(data["Weapons"][i]["ally"]["effects"][j][0].as_int()), data["Weapons"][i]["ally"]["effects"][j][1].as_int());
+                _weapons[i]._ally[j] = getEffect(PredefinedEffect(tmpValue["effects"][j][0].as_int()), tmpValue["effects"][j][1].as_int());
+            }
+
+            int offset = tmpSize;
+            tmpSize = tmpValue["otherEffects"].size();
+
+            for(int j = 0; j < tmpSize; ++j)
+            {
+                int area = tmpValue["otherEffects"][j]["area"].size();
+
+                _weapons[i]._enemy[j + offset]._area = std::vector<Coord>(area);
+
+                for(int k = 0; k < area; ++k) _weapons[i]._enemy[j + offset]._area[k] = Coord(tmpValue["otherEffects"][j]["area"][k][0].as_int(), tmpValue["otherEffects"][j]["area"][k][1].as_int());
+
+                int modifications = tmpValue["otherEffects"][j]["modifications"].size();
+
+                _weapons[i]._enemy[j + offset]._modifications = std::vector<Modification>(modifications);
+
+                for(int k = 0; k < modifications; ++k)
+                {
+                    getModification(tmpValue["otherEffects"][j]["modifications"][k], _weapons[i]._enemy[j + offset]._modifications[k]);
+                }
+
+                _weapons[i]._enemy[j + offset]._sprite.addAnimation("effect", resources.Texture(tmpValue["otherEffects"][j]["sprite"].as_string()), 4, sf::Vector2u(64, 64), sf::seconds(0.1f), false);
+                _weapons[i]._enemy[j + offset]._sound = sf::Sound(resources.Sound(tmpValue["otherEffects"][j]["sound"].as_string()));
             }
 
         }
@@ -112,20 +167,23 @@ void Database::loadUnits()
     {
         _units[i]._name = data["Units"][i]["name"].as_string(); //WARN: same names
         
-        int tmp;
+        jute::jValue tmpValue;
+        int tmpSize;
 
-        tmp = data["Units"][i]["weapon"]["weaponCompatibility"].size();
+        tmpValue = data["Units"][i]["weapon"]["weaponCompatibility"];
+        tmpSize = tmpValue.size();
 
-        for(int j = 0; j < tmp; ++j)
+        for(int j = 0; j < tmpSize; ++j)
         {
-            _units[i]._weaponCompatibility.insert(_units[i]._weaponCompatibility.end(), WeaponType(data["Units"][i]["weapon"]["weaponCompatibility"][j].as_int()));
+            _units[i]._weaponCompatibility.insert(_units[i]._weaponCompatibility.end(), WeaponType(tmpValue[j].as_int()));
         }
 
-        tmp = data["Units"][i]["weapon"]["byNameWeaponCompatibility"].size();
+        tmpValue = data["Units"][i]["weapon"]["byNameWeaponCompatibility"];
+        tmpSize = tmpValue.size();
 
-        for(int j = 0; j < tmp; ++j)
+        for(int j = 0; j < tmpSize; ++j)
         {
-            _units[i]._byNameWeaponCompatibility.insert(_units[i]._byNameWeaponCompatibility.end(), data["Units"][i]["weapon"]["byNameWeaponCompatibility"][j].as_string());
+            _units[i]._byNameWeaponCompatibility.insert(_units[i]._byNameWeaponCompatibility.end(), tmpValue[j].as_string());
         }
 
         std::string weaponName = data["Units"][i]["weapon"]["weapon"].as_string();
@@ -141,25 +199,26 @@ void Database::loadUnits()
 
         if(!found) std::cerr << "No weapon <" << weaponName << "> found for: " << _units[i]._name << "." << std::endl;
 
-        _units[i]._movementType = MovementType(data["Units"][i]["movement"]["movementType"].as_int());
+        tmpValue = data["Units"][i]["movement"];
+        _units[i]._movementType = MovementType(tmpValue["movementType"].as_int());
 
-        tmp = data["Units"][i]["movement"]["movementRange"].size();
+        tmpSize = tmpValue["movementRange"].size();
 
-        for(int j = 0; j < tmp; ++j)
+        for(int j = 0; j < tmpSize; ++j)
         {
-            _units[i]._movementRange.insert(_units[i]._movementRange.end(), data["Units"][i]["movement"]["movementRange"][j].as_int());
+            _units[i]._movementRange.insert(_units[i]._movementRange.end(), tmpValue["movementRange"][j].as_int());
         }
 
-        tmp = data["Units"][i]["movement"]["specialMovementRange"].size();
+        tmpSize = tmpValue["specialMovementRange"].size();
 
-        for(int j = 0; j < tmp; ++j)
+        for(int j = 0; j < tmpSize; ++j)
         {
-            _units[i]._specialMovementRange.insert(_units[i]._specialMovementRange.end(), Coord(data["Units"][i]["movement"]["specialMovementRange"][j][0].as_int(), data["Units"][i]["movement"]["specialMovementRange"][j][1].as_int()));
+            _units[i]._specialMovementRange.insert(_units[i]._specialMovementRange.end(), Coord(tmpValue["specialMovementRange"][j][0].as_int(), tmpValue["specialMovementRange"][j][1].as_int()));
         }
         
-        tmp = data["Units"][i]["attributes"].size();
+        tmpSize = data["Units"][i]["attributes"].size();
 
-        for(int j = 0; j < tmp; ++j)
+        for(int j = 0; j < tmpSize; ++j)
         {
             _units[i]._attributes[j] = data["Units"][i]["attributes"][j].as_int();
         }
@@ -247,6 +306,45 @@ void Database::loadMaps()
     }
 
     _mapsLoaded = true;
+}
+
+void Database::loadPassives()
+{
+    if(_passivesLoaded) return;
+
+    ifstream file("rsc/passives.json");
+    string page = "";
+    string tmp;
+
+    while(getline(file, tmp)) page += tmp;
+
+    jute::jValue data = jute::parser::parse(page);
+
+    int size = data["Passives"].size();
+
+    _passives = std::vector<Passive>(size);
+
+    for(int i = 0; i < size; ++i)
+    {
+        jute::jValue tmpValue = data["Passives"][i];
+        _passives[i]._name = tmpValue["name"].as_string();
+        _passives[i]._turns = tmpValue["turns"].as_int();
+
+        int tmpSize = tmpValue["triggerTurns"].size();
+
+        for(int j = 0; j < tmpSize; ++j) _passives[i]._triggerTurns.insert(TarjetTeam(tmpValue["triggerTurns"][j].as_int()));
+
+        int modifications = tmpValue["modifications"].size();
+
+        _passives[i]._modifications = std::vector<Modification>(modifications);
+
+        for(int k = 0; k < modifications; ++k)
+        {
+            getModification(tmpValue["modifications"][k], _passives[i]._modifications[k]);
+        }
+    }
+
+    _passivesLoaded = true;
 }
 
 std::vector<UnitData>& Database::getUnits()
@@ -461,5 +559,64 @@ sf::Color Database::hsv(int hue, float sat, float val)
         case 3: return sf::Color(p*255, q*255, val*255);
         case 4: return sf::Color(t*255, p*255, val*255);
         case 5: return sf::Color(val*255, p*255, q*255);
+    }
+}
+
+void Database::getModification(jute::jValue source, Modification& modification)
+{
+    jute::jValue params = source["params"];
+    switch(source["type"].as_int())
+    {
+        case 0:
+        {
+            assert(params.size() == 7 && "ERROR: Bad modification params");
+            int size = params[5].size();
+            std::vector<std::pair<UnitAttribute, float>> sum(size);
+            for(int i = 0; i < size; ++i) sum[i] = std::make_pair(UnitAttribute(params[5][i][0].as_int()), params[5][i][1].as_double());
+            size = params[6].size();
+            std::vector<std::pair<UnitAttribute, float>> res(size);
+            for(int i = 0; i < size; ++i) res[i] = std::make_pair(UnitAttribute(params[6][i][0].as_int()), params[6][i][1].as_double());
+            modification = Modification(UnitAttribute(params[0].as_int()), params[1].as_bool(), params[2].as_int(), params[3].as_bool(), params[4].as_bool(), sum, res);
+        }
+            break;
+        case 1:
+            assert(params.size() == 3 && "ERROR: Bad modification params");
+            modification = Modification(UnitState(params[0].as_int()), params[1].as_bool(), params[2].as_bool());
+            break;
+        case 2:
+        {
+            assert(params.size() == 1 && "ERROR: Bad modification params");
+            int size = params[0].size();
+            std::vector<Passive> add(size);
+            for(int i = 0; i < size; ++i)
+            {
+                std::string name = params[0][i].as_string();
+
+                std::vector<Passive>::iterator it = _passives.begin();
+                bool found = false;
+                while(!found && it != _passives.end())
+                {
+                    if(it->_name == name)
+                    {
+                        add[i] = *it;
+                        found = true;
+                    }
+                    ++it;
+                }
+
+                assert(found && "ERROR: passive not found");
+            }
+            modification = Modification(add);
+        }
+            break;
+        case 3:
+        {
+            assert(params.size() == 2 && "ERROR: Bad modification params");
+            int size = params[1].size();
+            std::vector<std::string> del(size);
+            for(int i = 0; i < size; ++i) del[i] = params[1][i].as_string();
+            modification = Modification(params[0].as_bool(), del);
+        }
+            break;
     }
 }
