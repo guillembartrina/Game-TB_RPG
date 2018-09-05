@@ -40,7 +40,8 @@ private:
 
     /* F */
     sf::Color hsv(int hue, float sat, float val);
-    void getModification(jute::jValue source, Modification& modification);
+    void readModification(jute::jValue source, Modification& modification);
+    void readEffect(jute::jValue source, Effect& effect);
 
     /* DATA */
     Resources& resources;

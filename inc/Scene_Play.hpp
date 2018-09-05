@@ -54,6 +54,7 @@ private:
     void setDataUnit(const Unit& unit);
 
     void effect(const Coord& coord, Effect& effect);
+    void ability(const Coord& coord, Ability& ability);
 
     void kill(Unit* unit);
 
@@ -70,6 +71,7 @@ private:
     TurnPhase _currentTurnPhase;
     bool _selected;
     Unit* _currentUnit;
+    Ability* _currentAbility;
 
     /* SFML */
     sf::Text t_title;

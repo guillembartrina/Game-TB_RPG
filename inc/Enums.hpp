@@ -113,4 +113,10 @@ enum TerrainAttribute
     TA_EFFECT
 };
 
+enum BfsType
+{
+    BT_MOVEMENT,
+    BT_ACTION
+};
+
 #endif

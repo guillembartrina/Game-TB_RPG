@@ -77,7 +77,7 @@ void Scene_Play::init()
     t_infoFinish.setPosition(600, 700);
 
     _passives = List(sf::FloatRect(430, 627, 140, 160), 3);
-    _abilities = List(sf::FloatRect(600, 625, 175, 165), 2, 1);
+    _abilities = List(sf::FloatRect(600, 625, 180, 165), 2, 1);
 
     _map = Map(sf::FloatRect(10, 10, 780, 600));
 
@@ -140,6 +140,8 @@ void Scene_Play::handleEvents(const sf::Event &event)
                             break;
                         case TurnPhase::TP_ABILITY:
                             _abilities.up();
+                            _map.eraseSelection();
+                            _map.abilityCell(_currentUnit->_position, _currentUnit->_base._abilities[_abilities.current()._id]._effects);
                             break;
                         default:
                             break;
@@ -203,6 +205,8 @@ void Scene_Play::handleEvents(const sf::Event &event)
                             break;
                         case TurnPhase::TP_ABILITY:
                             _abilities.down();
+                            _map.eraseSelection();
+                            _map.abilityCell(_currentUnit->_position, _currentUnit->_base._abilities[_abilities.current()._id]._effects);
                             break;
                         default:
                             break;
@@ -219,7 +223,7 @@ void Scene_Play::handleEvents(const sf::Event &event)
                             {
                                 if(_map.getPointerCell()._unit->_active && _map.getPointerCell()._unit->_team == _currentTeam)
                                 {
-                                    bool tarjets = !_map.getPointerCell()._unit->_states[UnitState::FIXED] && _map.selectCell(_map.pointer());
+                                    bool tarjets = !_map.getPointerCell()._unit->_states[UnitState::FIXED] && _map.selectCell(_map.pointer(), BfsType::BT_MOVEMENT);
                                     if(tarjets)
                                     {
                                         _selected = true;
@@ -229,7 +233,7 @@ void Scene_Play::handleEvents(const sf::Event &event)
                                     else
                                     {
                                         _map.eraseSelection();
-                                        _map.selectCell(_map.pointer(), false);
+                                        _map.selectCell(_map.pointer(), BfsType::BT_ACTION);
                                         _currentTurnPhase = TurnPhase::TP_ACTION;
                                         std::cerr << "INFO: No movement tarjets" << std::endl;
                                     }
@@ -243,7 +247,7 @@ void Scene_Play::handleEvents(const sf::Event &event)
                             {
                                 _map.eraseSelection();
                                 _map.moveUnit(_currentUnit, _map.pointer());
-                                _map.selectCell(_map.pointer(), false);
+                                _map.selectCell(_map.pointer(), BfsType::BT_ACTION);
                                 _currentTurnPhase = TurnPhase::TP_ACTION;
                             }
                         }
@@ -285,10 +289,15 @@ void Scene_Play::handleEvents(const sf::Event &event)
                             break;
                         case TurnPhase::TP_ABILITY:
                         {
-                            if(_abilities.allPicked())
-                            {
-                                std::cerr << "PICKED" << std::endl;
-                            }
+                            _abilities.pick();
+                            _map.eraseSelection();
+                            ability(_currentUnit->_position, _currentUnit->_base._abilities[_abilities.getPicked().front()->_id]);
+                            _currentUnit->_active = false;
+                            _currentUnit->_base._sprite.setColor(sf::Color::White);
+                            _selected = false;
+                            --_remainUnits;
+                            if(_remainUnits == 0) initPhase((++_currentTeam)%_teams.size());
+                            _currentTurnPhase = TurnPhase::TP_BEGIN;
                         }
                             break;
                         default:
@@ -309,7 +318,8 @@ void Scene_Play::handleEvents(const sf::Event &event)
                             break;
                         case TurnPhase::TP_ABILITY:
                         {
-                            _map.selectCell(_currentUnit->_position, false);
+                            _map.eraseSelection();
+                            _map.selectCell(_currentUnit->_position, BfsType::BT_ACTION);
                             _currentTurnPhase = TurnPhase::TP_ACTION;
                         }
                             break;
@@ -326,6 +336,7 @@ void Scene_Play::handleEvents(const sf::Event &event)
                         {
                             _map.eraseSelection();
                             _currentTurnPhase = TurnPhase::TP_ABILITY;
+                            if(_currentUnit->_base._abilities.size() != 0) _map.abilityCell(_currentUnit->_position, _currentUnit->_base._abilities.front()._effects); 
                         }
                             break;
                         default:
@@ -586,6 +597,23 @@ void Scene_Play::setDataUnit(const Unit& unit)
 
         ++it2;
     }
+
+    _abilities.clear();
+
+    for(unsigned int i = 0; i < unit._base._abilities.size(); ++i)
+    {
+        Item tmp;
+
+        sf::Text text;
+        text.setFont(_resources.Font("font1"));
+        text.setCharacterSize(40);
+
+        text.setString(unit._base._abilities[i]._name);
+
+        tmp.addText(sf::Vector2f(10, -6), text);
+
+        _abilities.add(tmp);
+    }
 }
 
 void  Scene_Play::effect(const Coord& tarjet, Effect& effect)
@@ -594,13 +622,30 @@ void  Scene_Play::effect(const Coord& tarjet, Effect& effect)
     {
         Coord coord = tarjet + effect._area[i];
 
-        if(_map.correctCoord(coord) && !_map.getCell(coord).empty())
+        if(_map.correctCoord(coord))
         {
-            _map.getCell(coord)._unit->applyModifications(effect._modifications);
+            if(!_map.getCell(coord).empty())
+            {
+                _map.getCell(coord)._unit->applyModifications(effect._modifications);
+            }
+            else
+            {
+                std::cerr << "INFO: No units on tarjet effect coord" << std::endl;
+            }
         }
     }
 
     _map.effect(tarjet, effect);
+}
+
+void Scene_Play::ability(const Coord& coord, Ability& ability)
+{
+    for(unsigned int i = 0; i < ability._effects.size(); ++i)
+    {
+        Coord tarjet = coord + ability._effects[i].first;
+
+        effect(tarjet, ability._effects[i].second);
+    }
 }
 
 void Scene_Play::kill(Unit* unit)

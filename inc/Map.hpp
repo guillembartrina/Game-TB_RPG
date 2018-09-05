@@ -64,7 +64,8 @@ public:
     Coord& selector();
     Cell& getSelectorCell();
 
-    bool selectCell(const Coord& coord, bool movement = true);
+    bool selectCell(const Coord& coord, BfsType type);
+    void abilityCell(const Coord& origin, const std::vector<std::pair<Coord, Effect>>& coords);
     void eraseSelection();
 
     bool correctCoord(const Coord& coord);

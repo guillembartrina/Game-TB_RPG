@@ -18,6 +18,7 @@ class Effect
 public:
 
     Effect();
+    Effect(const std::vector<Coord>& area, const std::vector<Modification>& modifications, bool haveSprite, bool haveSound);
     ~Effect();
 
     //std::vector<std::pair<UnitAttribute, Cond<int>>> _aConditions;
@@ -27,7 +28,9 @@ public:
 
     std::vector<Modification> _modifications;
 
+    bool _haveSprite;
     AnimatedSprite _sprite;
+    bool _haveSound;
     sf::Sound _sound;
 };
 

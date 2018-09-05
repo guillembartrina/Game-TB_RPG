@@ -153,7 +153,7 @@ Cell& Map::getSelectorCell()
     return _map[_selector.x][_selector.y];
 }
 
-bool Map::selectCell(const Coord& coord, bool movement)
+bool Map::selectCell(const Coord& coord, BfsType type)
 {
     bool tarjets = false;
     Unit& current = *_map[coord.x][coord.y]._unit;
@@ -161,19 +161,33 @@ bool Map::selectCell(const Coord& coord, bool movement)
     selector() = coord;
     _printSelector = true;
 
-    if(movement)
+    switch(type)
     {
-        tarjets = bfsMovement(current._position, current._team, current._movementType, current._movementRange, current._specialMovementRange);
-        //bfs(current._position, current._team, current._movementType, current._movementRange);
+        case BfsType::BT_MOVEMENT:
+            tarjets = bfsMovement(current._position, current._team, current._movementType, current._movementRange, current._specialMovementRange);
+            break;
+        case BfsType::BT_ACTION:
+            tarjets = bfsAction(current._position, current._team, current._base._weapon._tarjetsEnemy, current._base._weapon._tarjetsAlly, current._base._weapon._range, current._base._weapon._specialRange);
+            break;
     }
-    else
-    {
-        tarjets = bfsAction(current._position, current._team, current._base._weapon._tarjetsEnemy, current._base._weapon._tarjetsAlly, current._base._weapon._range, current._base._weapon._specialRange);
-    }
+
+    //bfs(current._position, current._team, current._movementType, current._movementRange);
 
    _pendingUpdate = true;
 
    return tarjets;
+}
+
+void Map::abilityCell(const Coord& origin, const std::vector<std::pair<Coord, Effect>>& coords)
+{
+    for(unsigned int i = 0; i < coords.size(); ++i)
+    {
+        Coord pos = origin + coords[i].first;
+        if(correctCoord(pos))
+        {
+            _map[pos.x][pos.y]._action = ActionType::AT_ENEMY;
+        }
+    }
 }
 
 void Map::eraseSelection()
@@ -214,20 +228,23 @@ void Map::moveUnit(Unit* unit, const Coord& coord)
 
 void Map::effect(const Coord& coord, Effect& effect)
 {
-    effect._sprite.setScale(sf::Vector2f(_tileSize.x/64, _tileSize.y/64));
-    effect._sprite.setActiveAnimation("effect");
-
-    for(unsigned int i = 0; i < effect._area.size(); ++i)
+    if(effect._haveSprite)
     {
-        Coord tarjet = coord + effect._area[i];
-        if(correctCoord(tarjet))
+        effect._sprite.setScale(sf::Vector2f(_tileSize.x/64, _tileSize.y/64));
+        effect._sprite.setActiveAnimation("effect");
+
+        for(unsigned int i = 0; i < effect._area.size(); ++i)
         {
-            effect._sprite.setPosition(_mapRect.left + tarjet.x*_tileSize.x, _mapRect.top + tarjet.y*_tileSize.y);
-            _effects.insert(_effects.end(), &effect._sprite);
+            Coord tarjet = coord + effect._area[i];
+            if(correctCoord(tarjet))
+            {
+                effect._sprite.setPosition(_mapRect.left + tarjet.x*_tileSize.x, _mapRect.top + tarjet.y*_tileSize.y);
+                _effects.insert(_effects.end(), &effect._sprite);
+            }
         }
     }
 
-    effect._sound.play();
+    if(effect._haveSound) effect._sound.play();
 }
 
 void Map::update(const sf::Time deltatime)
@@ -478,7 +495,6 @@ bool Map::bfsAction(const Coord& origin, unsigned int team, bool tarjetEnemy, bo
 
     return tarjets;
 }
-
 
 std::pair<bool, int> Map::terrainPass(MovementType movementType, TerrainType terrainType)
 {

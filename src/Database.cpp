@@ -80,24 +80,8 @@ void Database::loadWeapons()
             tmpSize = tmpValue["otherEffects"].size();
 
             for(int j = 0; j < tmpSize; ++j)
-            {
-                int area = tmpValue["otherEffects"][j]["area"].size();
-
-                _weapons[i]._enemy[j + offset]._area = std::vector<Coord>(area);
-
-                for(int k = 0; k < area; ++k) _weapons[i]._enemy[j + offset]._area[k] = Coord(tmpValue["otherEffects"][j]["area"][k][0].as_int(), tmpValue["otherEffects"][j]["area"][k][1].as_int());
-
-                int modifications = tmpValue["otherEffects"][j]["modifications"].size();
-
-                _weapons[i]._enemy[j + offset]._modifications = std::vector<Modification>(modifications);
-
-                for(int k = 0; k < modifications; ++k)
-                {
-                    getModification(tmpValue["otherEffects"][j]["modifications"][k], _weapons[i]._enemy[j + offset]._modifications[k]);
-                }
-
-                _weapons[i]._enemy[j + offset]._sprite.addAnimation("effect", resources.Texture(tmpValue["otherEffects"][j]["sprite"].as_string()), 4, sf::Vector2u(64, 64), sf::seconds(0.1f), false);
-                _weapons[i]._enemy[j + offset]._sound = sf::Sound(resources.Sound(tmpValue["otherEffects"][j]["sound"].as_string()));
+            { 
+                readEffect(tmpValue["otherEffects"][j], _weapons[i]._enemy[j + offset]);
             }
         }
 
@@ -122,23 +106,7 @@ void Database::loadWeapons()
 
             for(int j = 0; j < tmpSize; ++j)
             {
-                int area = tmpValue["otherEffects"][j]["area"].size();
-
-                _weapons[i]._enemy[j + offset]._area = std::vector<Coord>(area);
-
-                for(int k = 0; k < area; ++k) _weapons[i]._enemy[j + offset]._area[k] = Coord(tmpValue["otherEffects"][j]["area"][k][0].as_int(), tmpValue["otherEffects"][j]["area"][k][1].as_int());
-
-                int modifications = tmpValue["otherEffects"][j]["modifications"].size();
-
-                _weapons[i]._enemy[j + offset]._modifications = std::vector<Modification>(modifications);
-
-                for(int k = 0; k < modifications; ++k)
-                {
-                    getModification(tmpValue["otherEffects"][j]["modifications"][k], _weapons[i]._enemy[j + offset]._modifications[k]);
-                }
-
-                _weapons[i]._enemy[j + offset]._sprite.addAnimation("effect", resources.Texture(tmpValue["otherEffects"][j]["sprite"].as_string()), 4, sf::Vector2u(64, 64), sf::seconds(0.1f), false);
-                _weapons[i]._enemy[j + offset]._sound = sf::Sound(resources.Sound(tmpValue["otherEffects"][j]["sound"].as_string()));
+                readEffect(tmpValue["otherEffects"][j], _weapons[i]._ally[j + offset]);
             }
 
         }
@@ -198,6 +166,27 @@ void Database::loadUnits()
         }
 
         if(!found) std::cerr << "No weapon <" << weaponName << "> found for: " << _units[i]._name << "." << std::endl;
+        
+        tmpValue = data["Units"][i]["abilities"];
+        tmpSize = tmpValue.size();
+
+        _units[i]._abilities = std::vector<Ability>(tmpSize);
+
+        for(int j = 0; j < tmpSize; ++j)
+        {
+            _units[i]._abilities[j]._name = tmpValue[j]["name"].as_string();
+
+            int size = tmpValue[j]["effects"].size();
+
+            _units[i]._abilities[j]._effects = std::vector<std::pair<Coord, Effect>>(size);
+
+            for(int k = 0; k < size; ++k)
+            {
+                _units[i]._abilities[j]._effects[k].first = Coord(tmpValue[j]["effects"][k][0][0].as_int(), tmpValue[j]["effects"][k][0][1].as_int());
+
+                readEffect(tmpValue[j]["effects"][k][1], _units[i]._abilities[j]._effects[k].second);
+            }
+        }
 
         tmpValue = data["Units"][i]["movement"];
         _units[i]._movementType = MovementType(tmpValue["movementType"].as_int());
@@ -340,7 +329,7 @@ void Database::loadPassives()
 
         for(int k = 0; k < modifications; ++k)
         {
-            getModification(tmpValue["modifications"][k], _passives[i]._modifications[k]);
+            readModification(tmpValue["modifications"][k], _passives[i]._modifications[k]);
         }
     }
 
@@ -500,6 +489,8 @@ Effect Database::getEffect(PredefinedEffect id, int value)
     Effect effect;
 
     effect._area = {Coord(0, 0)};
+    effect._haveSprite = true;
+    effect._haveSound = true;
 
     Modification modification;
 
@@ -562,7 +553,7 @@ sf::Color Database::hsv(int hue, float sat, float val)
     }
 }
 
-void Database::getModification(jute::jValue source, Modification& modification)
+void Database::readModification(jute::jValue source, Modification& modification)
 {
     jute::jValue params = source["params"];
     switch(source["type"].as_int())
@@ -618,5 +609,33 @@ void Database::getModification(jute::jValue source, Modification& modification)
             modification = Modification(params[0].as_bool(), del);
         }
             break;
+    }
+}
+
+void Database::readEffect(jute::jValue source, Effect& effect)
+{
+    int size = source["area"].size();
+    effect._area = std::vector<Coord>(size);
+    for(int k = 0; k < size; ++k) effect._area[k] = Coord(source["area"][k][0].as_int(), source["area"][k][1].as_int());
+
+    size = source["modifications"].size();
+
+    effect._modifications = std::vector<Modification>(size);
+
+    for(int k = 0; k < size; ++k)
+    {
+        readModification(source["modifications"][k], effect._modifications[k]);
+    }
+
+    if(source["sprite"].as_string() != "")
+    {
+        effect._haveSprite = true;
+        effect._sprite.addAnimation("effect", resources.Texture(source["sprite"].as_string()), 4, sf::Vector2u(64, 64), sf::seconds(0.1f), false);
+    }
+
+    if(source["sound"].as_string() != "")
+    {
+        effect._haveSound = true;
+        effect._sound = sf::Sound(resources.Sound(source["sound"].as_string()));
     }
 }

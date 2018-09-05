@@ -12,6 +12,7 @@
 #include "AnimatedSprite.hpp"
 #include "Modification.hpp"
 #include "Passive.hpp"
+#include "Ability.hpp"
 
 #include "Enums.hpp"
 
@@ -22,6 +23,8 @@ struct UnitData
     std::set<WeaponType> _weaponCompatibility;
     std::list<std::string> _byNameWeaponCompatibility;
     Weapon _weapon;
+
+    std::vector<Ability> _abilities;
 
     MovementType _movementType;
     std::set<int> _movementRange;
