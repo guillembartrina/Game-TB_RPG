@@ -74,7 +74,8 @@ enum TurnPhase
     TP_BEGIN,
     TP_SELECTED,
     TP_ACTION,
-    TP_ABILITY
+    TP_ABILITY,
+    TP_CAST
 };
 
 enum TarjetTeam

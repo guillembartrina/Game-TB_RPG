@@ -18,6 +18,8 @@ public:
 
     std::string _name;
 
+    std::set<int> _range;
+
     std::vector<std::pair<Coord, Effect>> _effects;
 };
 

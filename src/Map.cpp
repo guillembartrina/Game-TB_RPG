@@ -178,18 +178,6 @@ bool Map::selectCell(const Coord& coord, BfsType type)
    return tarjets;
 }
 
-void Map::abilityCell(const Coord& origin, const std::vector<std::pair<Coord, Effect>>& coords)
-{
-    for(unsigned int i = 0; i < coords.size(); ++i)
-    {
-        Coord pos = origin + coords[i].first;
-        if(correctCoord(pos))
-        {
-            _map[pos.x][pos.y]._action = ActionType::AT_ENEMY;
-        }
-    }
-}
-
 void Map::eraseSelection()
 {
     _printSelector = false;
@@ -323,6 +311,75 @@ void Map::draw(sf::RenderWindow& window) const
     }
 }
 
+bool Map::redCells(const Coord& origin, const std::set<int>& range, const std::vector<std::pair<Coord, Effect>>& coords)
+{
+    for(unsigned int i = 0; i < coords.size(); ++i)
+    {
+        Coord pos = origin + coords[i].first;
+        if(correctCoord(pos))
+        {
+            _map[pos.x][pos.y]._action = ActionType::AT_ENEMY;
+        }
+    }
+
+    bool tarjets = false;
+
+    if(!range.empty())
+    {
+        std::set<int>::iterator it = range.begin();
+        int maxRange = *it;
+        while(it != range.end())
+        {
+            if(*it > maxRange) maxRange = *it;
+            ++it;
+        }
+
+        std::queue<Coord> q;
+        q.push(origin);
+
+        int count1 = 1, count2 = 0;
+        int dist = 0;
+
+        while(!q.empty())
+        {
+            Coord current = q.front();
+            q.pop();
+            Cell& cell = getCell(current);
+
+            --count1;
+
+            if(!cell._checked)
+            {
+                cell._distance = dist;
+                cell._checked = true;
+
+                if(cell._distance <= unsigned(maxRange))
+                {
+                    if(range.find(cell._distance) != range.end())
+                    {
+                        cell._action = ActionType::AT_ENEMY;
+                        tarjets = true;
+                    }
+
+                    if(current.x < int(_WCells-1)) { q.push(current + Coord(1, 0)); ++count2; }
+                    if(current.x > 0) { q.push(current + Coord(-1, 0)); ++count2; }
+                    if(current.y < int(_HCells-1)) { q.push(current + Coord(0, 1)); ++count2; }
+                    if(current.y > 0) { q.push(current + Coord(0, -1)); ++count2; }
+                }
+            }
+
+            if(count1 == 0)
+            {
+                ++dist;
+                count1 = count2;
+                count2 = 0;
+            }
+        }
+    }
+
+    return tarjets;
+}
+
 bool Map::bfsMovement(const Coord& origin, unsigned int team, MovementType type, const std::set<int>& range, const std::vector<Coord>& specialRange)
 {
     bool tarjets = false;
@@ -357,6 +414,7 @@ bool Map::bfsMovement(const Coord& origin, unsigned int team, MovementType type,
             if(!cell._checked)
             {
                 cell._distance = dist + current.second;
+                cell._checked = true;
 
                 if(cell._distance <= unsigned(maxRange))
                 {
@@ -385,8 +443,6 @@ bool Map::bfsMovement(const Coord& origin, unsigned int team, MovementType type,
                     if(current.first.y < int(_HCells-1)) { q.push(std::make_pair(current.first + Coord(0, 1), mod)); ++count2; }
                     if(current.first.y > 0) { q.push(std::make_pair(current.first + Coord(0, -1), mod)); ++count2; }
                 }
-                
-                cell._checked = true;
             }
 
             if(count1 == 0)
@@ -443,6 +499,7 @@ bool Map::bfsAction(const Coord& origin, unsigned int team, bool tarjetEnemy, bo
             if(!cell._checked)
             {
                 cell._distance = dist;
+                cell._checked = true;
 
                 if(cell._distance <= unsigned(maxRange))
                 {
@@ -470,8 +527,6 @@ bool Map::bfsAction(const Coord& origin, unsigned int team, bool tarjetEnemy, bo
                     if(unsigned(current.y) < _HCells-1) { q.push(current + Coord(0, 1)); ++count2; }
                     if(current.y > 0) { q.push(current + Coord(0, -1)); ++count2; }
                 }
-                
-                cell._checked = true;
             }
 
             if(count1 == 0)

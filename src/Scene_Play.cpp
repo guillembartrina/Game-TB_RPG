@@ -130,6 +130,7 @@ void Scene_Play::handleEvents(const sf::Event &event)
                         case TurnPhase::TP_BEGIN:
                         case TurnPhase::TP_SELECTED:
                         case TurnPhase::TP_ACTION:
+                        case TurnPhase::TP_CAST:
                         {
                             if (_map.pointer().y > 0)
                             {
@@ -139,9 +140,12 @@ void Scene_Play::handleEvents(const sf::Event &event)
                         }
                             break;
                         case TurnPhase::TP_ABILITY:
+                        {
                             _abilities.up();
                             _map.eraseSelection();
-                            _map.abilityCell(_currentUnit->_position, _currentUnit->_base._abilities[_abilities.current()._id]._effects);
+
+                            _map.redCells(_currentUnit->_position, {}, _currentUnit->_base._abilities[_abilities.current()._id]._effects);
+                        }
                             break;
                         default:
                             break;
@@ -155,6 +159,7 @@ void Scene_Play::handleEvents(const sf::Event &event)
                         case TurnPhase::TP_BEGIN:
                         case TurnPhase::TP_SELECTED:
                         case TurnPhase::TP_ACTION:
+                        case TurnPhase::TP_CAST:
                         {
                             if (_map.pointer().x > 0)
                             {
@@ -175,6 +180,7 @@ void Scene_Play::handleEvents(const sf::Event &event)
                         case TurnPhase::TP_BEGIN:
                         case TurnPhase::TP_SELECTED:
                         case TurnPhase::TP_ACTION:
+                        case TurnPhase::TP_CAST:
                         {
                             if (_map.pointer().x < int(_map._WCells) - 1)
                             {
@@ -195,6 +201,7 @@ void Scene_Play::handleEvents(const sf::Event &event)
                         case TurnPhase::TP_BEGIN:
                         case TurnPhase::TP_SELECTED:
                         case TurnPhase::TP_ACTION:
+                        case TurnPhase::TP_CAST:
                         {
                             if (_map.pointer().y < int(_map._HCells) - 1)
                             {
@@ -206,7 +213,7 @@ void Scene_Play::handleEvents(const sf::Event &event)
                         case TurnPhase::TP_ABILITY:
                             _abilities.down();
                             _map.eraseSelection();
-                            _map.abilityCell(_currentUnit->_position, _currentUnit->_base._abilities[_abilities.current()._id]._effects);
+                            _map.redCells(_currentUnit->_position, {}, _currentUnit->_base._abilities[_abilities.current()._id]._effects);
                             break;
                         default:
                             break;
@@ -277,13 +284,7 @@ void Scene_Play::handleEvents(const sf::Event &event)
                                     setDataUnit(*_map.getPointerCell()._unit);
                                 }
                                 
-                                _currentUnit->_active = false;
-                                _currentUnit->_base._sprite.setColor(sf::Color::White);
-                                _map.eraseSelection();
-                                _selected = false;
-                                --_remainUnits;
-                                if(_remainUnits == 0) initPhase((++_currentTeam)%_teams.size());
-                                _currentTurnPhase = TurnPhase::TP_BEGIN;
+                                endTurn();
                             }
                         }
                             break;
@@ -291,13 +292,24 @@ void Scene_Play::handleEvents(const sf::Event &event)
                         {
                             _abilities.pick();
                             _map.eraseSelection();
-                            ability(_currentUnit->_position, _currentUnit->_base._abilities[_abilities.getPicked().front()->_id]);
-                            _currentUnit->_active = false;
-                            _currentUnit->_base._sprite.setColor(sf::Color::White);
-                            _selected = false;
-                            --_remainUnits;
-                            if(_remainUnits == 0) initPhase((++_currentTeam)%_teams.size());
-                            _currentTurnPhase = TurnPhase::TP_BEGIN;
+                            _currentAbility = &_currentUnit->_base._abilities[_abilities.getPicked().front()->_id];
+                            bool tarjets = _map.redCells(_currentUnit->_position, _currentAbility->_range, {});
+                            if(tarjets) _currentTurnPhase = TurnPhase::TP_CAST;
+                            else
+                            {
+                                std::cerr << "INFO: No ability tarjets" << std::endl;
+                                endTurn();
+                            }
+                        }
+                            break;
+                        case TurnPhase::TP_CAST:
+                        {
+                            if(_map.getPointerCell()._action == ActionType::AT_ENEMY)
+                            {
+                                ability(_map.pointer(), *_currentAbility);
+                                setDataUnit(*_map.getPointerCell()._unit);
+                                endTurn();
+                            }
                         }
                             break;
                         default:
@@ -336,7 +348,7 @@ void Scene_Play::handleEvents(const sf::Event &event)
                         {
                             _map.eraseSelection();
                             _currentTurnPhase = TurnPhase::TP_ABILITY;
-                            if(_currentUnit->_base._abilities.size() != 0) _map.abilityCell(_currentUnit->_position, _currentUnit->_base._abilities.front()._effects); 
+                            if(_currentUnit->_base._abilities.size() != 0) _map.redCells(_currentUnit->_position, {}, _currentUnit->_base._abilities.front()._effects); 
                         }
                             break;
                         default:
@@ -356,13 +368,7 @@ void Scene_Play::handleEvents(const sf::Event &event)
                             break;
                         case TurnPhase::TP_ACTION:
                         {
-                            _currentUnit->_active = false;
-                            _currentUnit->_base._sprite.setColor(sf::Color(102, 102, 102));
-                            _map.eraseSelection();
-                            _selected = false;
-                            --_remainUnits;
-                            if(_remainUnits == 0) initPhase((++_currentTeam)%_teams.size());
-                            _currentTurnPhase = TurnPhase::TP_BEGIN;                            
+                            endTurn();                        
                         }
                             break;
                         default:
@@ -466,6 +472,17 @@ void Scene_Play::initPhase(unsigned int team)
 
     _currentUnit = nullptr;
     _currentTurnPhase = TurnPhase::TP_BEGIN;
+}
+
+void Scene_Play::endTurn()
+{
+    _selected = false;
+    _currentUnit->_active = false;
+    _currentUnit->_base._sprite.setColor(sf::Color(102, 102, 102));
+    _map.eraseSelection();
+    --_remainUnits;
+    if(_remainUnits == 0) initPhase((++_currentTeam)%_teams.size());
+    _currentTurnPhase = TurnPhase::TP_BEGIN;   
 }
 
 void Scene_Play::setDataUnit(const Unit& unit)

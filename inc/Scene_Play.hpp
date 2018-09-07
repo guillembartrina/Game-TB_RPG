@@ -51,6 +51,7 @@ private:
 
     /* F */
     void initPhase(unsigned int team);
+    void endTurn();
     void setDataUnit(const Unit& unit);
 
     void effect(const Coord& coord, Effect& effect);

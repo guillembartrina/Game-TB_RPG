@@ -176,7 +176,11 @@ void Database::loadUnits()
         {
             _units[i]._abilities[j]._name = tmpValue[j]["name"].as_string();
 
-            int size = tmpValue[j]["effects"].size();
+            int size = tmpValue[j]["range"].size();
+
+            for(int k = 0; k < size; ++k)  _units[i]._abilities[j]._range.insert(tmpValue[j]["range"][k].as_int());
+
+            size = tmpValue[j]["effects"].size();
 
             _units[i]._abilities[j]._effects = std::vector<std::pair<Coord, Effect>>(size);
 
