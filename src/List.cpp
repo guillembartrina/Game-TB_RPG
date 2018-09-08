@@ -196,7 +196,12 @@ Item List::current()
     return Item();
 }
 
-bool List::allPicked()
+bool List::active() const
+{
+    return _active;
+}
+
+bool List::allPicked() const
 {
     return (_pickedItems.size() == _numPickableItems);
 }

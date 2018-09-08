@@ -54,8 +54,8 @@ private:
     void endTurn();
     void setDataUnit(const Unit& unit);
 
-    void effect(const Coord& coord, Effect& effect);
-    void ability(const Coord& coord, Ability& ability);
+    void effect(const Coord& tarjet, Effect& effect);
+    void ability(const Coord& tarjet, Ability& ability);
 
     void kill(Unit* unit);
 

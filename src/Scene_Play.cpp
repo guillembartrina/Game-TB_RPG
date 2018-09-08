@@ -141,10 +141,12 @@ void Scene_Play::handleEvents(const sf::Event &event)
                             break;
                         case TurnPhase::TP_ABILITY:
                         {
-                            _abilities.up();
-                            _map.eraseSelection();
-
-                            _map.redCells(_currentUnit->_position, {}, _currentUnit->_base._abilities[_abilities.current()._id]._effects);
+                            if(_abilities.active())
+                            {
+                                _abilities.up();
+                                _map.eraseSelection();
+                                _map.redCells(_currentUnit->_position, {}, _currentUnit->_base._abilities[_abilities.current()._id]._effects);
+                            }
                         }
                             break;
                         default:
@@ -211,9 +213,14 @@ void Scene_Play::handleEvents(const sf::Event &event)
                         }
                             break;
                         case TurnPhase::TP_ABILITY:
-                            _abilities.down();
-                            _map.eraseSelection();
-                            _map.redCells(_currentUnit->_position, {}, _currentUnit->_base._abilities[_abilities.current()._id]._effects);
+                        {
+                            if(_abilities.active())
+                            {
+                                _abilities.down();
+                                _map.eraseSelection();
+                                _map.redCells(_currentUnit->_position, {}, _currentUnit->_base._abilities[_abilities.current()._id]._effects);
+                            }
+                        }
                             break;
                         default:
                             break;
@@ -272,7 +279,7 @@ void Scene_Play::handleEvents(const sf::Event &event)
                                         effect(_map.pointer(), weapon._enemy[i]);
                                     }
 
-                                    setDataUnit(*_map.getPointerCell()._unit);
+                                    if(!_map.getPointerCell().empty()) setDataUnit(*_map.getPointerCell()._unit);
                                 }   
                                 else
                                 {
@@ -281,7 +288,7 @@ void Scene_Play::handleEvents(const sf::Event &event)
                                         effect(_map.pointer(), weapon._ally[i]);
                                     }
 
-                                    setDataUnit(*_map.getPointerCell()._unit);
+                                    if(!_map.getPointerCell().empty()) setDataUnit(*_map.getPointerCell()._unit);
                                 }
                                 
                                 endTurn();
@@ -307,7 +314,7 @@ void Scene_Play::handleEvents(const sf::Event &event)
                             if(_map.getPointerCell()._action == ActionType::AT_ENEMY)
                             {
                                 ability(_map.pointer(), *_currentAbility);
-                                setDataUnit(*_map.getPointerCell()._unit);
+                                if(!_map.getPointerCell().empty()) setDataUnit(*_map.getPointerCell()._unit);
                                 endTurn();
                             }
                         }
@@ -647,7 +654,7 @@ void  Scene_Play::effect(const Coord& tarjet, Effect& effect)
             }
             else
             {
-                std::cerr << "INFO: No units on tarjet effect coord" << std::endl;
+                std::cerr << "INFO: No units on tarjet effect coord <" << coord.x << "," << coord.y << ">" << std::endl;
             }
         }
     }
@@ -655,13 +662,13 @@ void  Scene_Play::effect(const Coord& tarjet, Effect& effect)
     _map.effect(tarjet, effect);
 }
 
-void Scene_Play::ability(const Coord& coord, Ability& ability)
+void Scene_Play::ability(const Coord& tarjet, Ability& ability)
 {
     for(unsigned int i = 0; i < ability._effects.size(); ++i)
     {
-        Coord tarjet = coord + ability._effects[i].first;
+        Coord coord = tarjet + ability._effects[i].first;
 
-        effect(tarjet, ability._effects[i].second);
+        effect(coord, ability._effects[i].second);
     }
 }
 

@@ -72,7 +72,7 @@ public:
 
     void moveUnit(Unit* unit, const Coord& coord);
 
-    void effect(const Coord& coord, Effect& effect);
+    void effect(const Coord& tarjet, Effect& effect);
 
     void update(const sf::Time deltatime);
 
@@ -98,7 +98,7 @@ private:
     bool _printPointer;
     bool _printSelector;
 
-    std::list<AnimatedSprite*> _effects;
+    std::list<AnimatedSprite> _effects;
 
     /* VARS */
     bool _mapLoaded;

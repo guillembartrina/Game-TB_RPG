@@ -214,7 +214,7 @@ void Map::moveUnit(Unit* unit, const Coord& coord)
     }
 }
 
-void Map::effect(const Coord& coord, Effect& effect)
+void Map::effect(const Coord& tarjet, Effect& effect)
 {
     if(effect._haveSprite)
     {
@@ -223,11 +223,11 @@ void Map::effect(const Coord& coord, Effect& effect)
 
         for(unsigned int i = 0; i < effect._area.size(); ++i)
         {
-            Coord tarjet = coord + effect._area[i];
-            if(correctCoord(tarjet))
+            Coord coord = tarjet + effect._area[i];
+            if(correctCoord(coord))
             {
-                effect._sprite.setPosition(_mapRect.left + tarjet.x*_tileSize.x, _mapRect.top + tarjet.y*_tileSize.y);
-                _effects.insert(_effects.end(), &effect._sprite);
+                _effects.insert(_effects.end(), effect._sprite);
+                _effects.back().setPosition(_mapRect.left + coord.x*_tileSize.x, _mapRect.top + coord.y*_tileSize.y);
             }
         }
     }
@@ -264,14 +264,14 @@ void Map::update(const sf::Time deltatime)
             _pendingUpdate = false;
         }
 
-        std::list<AnimatedSprite*>::iterator it = _effects.begin();
+        std::list<AnimatedSprite>::iterator it = _effects.begin();
         while(it != _effects.end())
         {
-            (*it)->updateAnimation(deltatime);
+            it->updateAnimation(deltatime);
 
-            if((*it)->hasAnimationEnded())
+            if(it->hasAnimationEnded())
             {
-                (*it)->firstAnimationFrame();
+                it->firstAnimationFrame();
                 it = _effects.erase(it);
             }
             ++it;
@@ -299,10 +299,10 @@ void Map::draw(sf::RenderWindow& window) const
             }
         }
 
-        std::list<AnimatedSprite*>::const_iterator it = _effects.begin();
+        std::list<AnimatedSprite>::const_iterator it = _effects.begin();
         while(it != _effects.end())
         {
-            window.draw(*(*it));
+            window.draw(*it);
             ++it;
         }
 
@@ -429,8 +429,11 @@ bool Map::bfsMovement(const Coord& origin, unsigned int team, MovementType type,
 
                             if(range.find(cell._distance) != range.end())
                             {
-                                cell._action = ActionType::AT_MOVE;
-                                tarjets = true;
+                                if(cell.empty())
+                                {
+                                    cell._action = ActionType::AT_MOVE;
+                                    tarjets = true;
+                                }
                             }
                         }
                     } 

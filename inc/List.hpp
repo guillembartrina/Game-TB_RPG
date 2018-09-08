@@ -57,7 +57,8 @@ public:
 
     Item current();
 
-    bool allPicked();
+    bool active() const;
+    bool allPicked() const;
     std::list<std::list<Item>::iterator>& getPicked();
 
     void update(const sf::Time deltatime);
