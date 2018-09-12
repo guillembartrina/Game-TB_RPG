@@ -32,6 +32,8 @@ void Database::loadWeapons()
 
     _weapons = std::vector<Weapon>(size);
 
+    if(size == 0) throw Error("No weapons found on database");
+
     for(int i = 0; i < size; ++i)
     {
         _weapons[i]._name = data["Weapons"][i]["name"].as_string(); //WARN: same names
@@ -131,6 +133,8 @@ void Database::loadUnits()
 
     _units = std::vector<UnitData>(size);
 
+    if(size == 0) throw Error("No units found on database");
+
     for(int i = 0; i < size; ++i)
     {
         _units[i]._name = data["Units"][i]["name"].as_string(); //WARN: same names
@@ -165,7 +169,7 @@ void Database::loadUnits()
             }
         }
 
-        if(!found) std::cerr << "No weapon <" << weaponName << "> found for: " << _units[i]._name << "." << std::endl;
+        if(!found) throw Error("Weapon <" + weaponName + "> not found");
         
         tmpValue = data["Units"][i]["abilities"];
         tmpSize = tmpValue.size();
@@ -239,6 +243,8 @@ void Database::loadMaps()
     int size = data["Maps"].size();
 
     _maps = std::vector<MapData>(size);
+
+    if(size == 0) throw Error("No maps found on database");
 
     for(int i = 0; i < size; ++i)
     {
@@ -564,7 +570,7 @@ void Database::readModification(jute::jValue source, Modification& modification)
     {
         case 0:
         {
-            assert(params.size() == 7 && "ERROR: Bad modification params");
+            if(params.size() != 7) throw Error("Bad modification params");
             int size = params[5].size();
             std::vector<std::pair<UnitAttribute, float>> sum(size);
             for(int i = 0; i < size; ++i) sum[i] = std::make_pair(UnitAttribute(params[5][i][0].as_int()), params[5][i][1].as_double());
@@ -575,12 +581,12 @@ void Database::readModification(jute::jValue source, Modification& modification)
         }
             break;
         case 1:
-            assert(params.size() == 3 && "ERROR: Bad modification params");
+            if(params.size() != 3) throw Error("Bad modification params");
             modification = Modification(UnitState(params[0].as_int()), params[1].as_bool(), params[2].as_bool());
             break;
         case 2:
         {
-            assert(params.size() == 1 && "ERROR: Bad modification params");
+            if(params.size() != 1) throw Error("Bad modification params");
             int size = params[0].size();
             std::vector<Passive> add(size);
             for(int i = 0; i < size; ++i)
@@ -599,14 +605,14 @@ void Database::readModification(jute::jValue source, Modification& modification)
                     ++it;
                 }
 
-                assert(found && "ERROR: passive not found");
+                if(!found) throw Error("Passive <" + name + "> not found");
             }
             modification = Modification(add);
         }
             break;
         case 3:
         {
-            assert(params.size() == 2 && "ERROR: Bad modification params");
+            if(params.size() != 2) throw Error("Bad modification params");
             int size = params[1].size();
             std::vector<std::string> del(size);
             for(int i = 0; i < size; ++i) del[i] = params[1][i].as_string();

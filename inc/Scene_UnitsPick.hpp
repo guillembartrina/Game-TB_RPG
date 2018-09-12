@@ -2,6 +2,7 @@
 #define SCENE__UNITSPICK_HPP
 
 #include "Scene.hpp"
+#include "Error.hpp"
 
 #include "List.hpp"
 #include "Database.hpp"

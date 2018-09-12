@@ -89,7 +89,7 @@ void Scene_Play::init()
 
         for(unsigned int j = 0; j < _unitsData[i].size(); ++j)
         {
-            assert(_map.correctCoord(_mapData._teams[i][j]) && "ERROR: Bad unit position coord");
+            if(!_map.correctCoord(_mapData._teams[i][j])) throw Error("Bad position coord, unit <" + std::to_string(j) + "> of team <" + std::to_string(i) + ">");
 
             _teams[i][j].init(_unitsData[i][j], i, _mapData._teams[i][j]);
         }

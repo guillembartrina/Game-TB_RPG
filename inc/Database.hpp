@@ -2,11 +2,12 @@
 #define DATABASE_HPP
 
 #include <list>
-#include <assert.h>
 
 #include "jute.hpp"
 
 #include "Resources.hpp"
+#include "Error.hpp"
+
 #include "Attr.hpp"
 #include "Weapon.hpp"
 #include "Unit.hpp"

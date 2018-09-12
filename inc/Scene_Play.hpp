@@ -2,9 +2,9 @@
 #define SCENE__PLAY_HPP
 
 #include <list>
-#include <assert.h>
 
 #include "Scene.hpp"
+#include "Error.hpp"
 
 #include "Map.hpp"
 #include "Unit.hpp"

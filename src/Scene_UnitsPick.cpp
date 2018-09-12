@@ -29,6 +29,11 @@ void Scene_UnitsPick::init()
     _currentTeam = 0;
 
     loadUnitsToLists();
+
+    for(unsigned int i = 0; i < _mapData->_teams.size(); ++i)
+    {
+        if(_unitsLists.size() < _mapData->_teams[i].size()) throw Error("No suficient units for team <" + std::to_string(i) + ">");
+    }
 }
 
 void Scene_UnitsPick::handleEvents(const sf::Event& event)
