@@ -56,7 +56,8 @@ public:
     Map(sf::FloatRect mapRect);
     ~Map();
 
-    void setMap(Resources& resources, const MapData& mapData, std::vector<std::vector<Unit>>& teams);
+    void setMap(Resources& resources, const MapData& mapData);
+    void setUnits(std::vector<std::vector<Unit>>& teams);
 
     Cell& getCell(const Coord& coord);
     Coord& pointer();
@@ -102,6 +103,7 @@ private:
 
     /* VARS */
     bool _mapLoaded;
+    bool _unitsLoaded;
     bool _pendingUpdate;
 
     Coord _pointer;

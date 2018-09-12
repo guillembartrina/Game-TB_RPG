@@ -81,6 +81,8 @@ void Scene_Play::init()
 
     _map = Map(sf::FloatRect(10, 10, 780, 600));
 
+    _map.setMap(_resources, _mapData);
+
     _teams = std::vector<std::vector<Unit>>(_unitsData.size());
 
     for(unsigned int i = 0; i < _unitsData.size(); ++i)
@@ -95,7 +97,7 @@ void Scene_Play::init()
         }
     }
 
-    _map.setMap(_resources, _mapData, _teams);
+    _map.setUnits(_teams);
 
     _resources.Music("ambient").setLoop(true);
     _resources.Music("ambient").setVolume(20.f);

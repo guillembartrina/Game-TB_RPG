@@ -29,6 +29,7 @@ Map::Map()
 Map::Map(sf::FloatRect mapRect)
 {
     _mapLoaded = false;
+    _unitsLoaded = false;
     _mapRect = mapRect;
 
     rs_background.setPosition(_mapRect.left, _mapRect.top);
@@ -47,7 +48,7 @@ Map::Map(sf::FloatRect mapRect)
 
 Map::~Map() {}
 
-void Map::setMap(Resources& resources, const MapData& mapData, std::vector<std::vector<Unit>>& teams)
+void Map::setMap(Resources& resources, const MapData& mapData)
 {
     _base = mapData;
     _WCells = mapData._map.size();
@@ -98,6 +99,12 @@ void Map::setMap(Resources& resources, const MapData& mapData, std::vector<std::
 
     _printSelector = false;
 
+    _mapLoaded = true;
+    _pendingUpdate = true;
+}
+
+void Map::setUnits(std::vector<std::vector<Unit>>& teams)
+{
     for(unsigned int i = 0; i < teams.size(); ++i)
     {
         for(unsigned int j = 0; j < teams[i].size(); ++j)
@@ -120,7 +127,7 @@ void Map::setMap(Resources& resources, const MapData& mapData, std::vector<std::
         }
     }
 
-    _mapLoaded = true;
+    _unitsLoaded = true;
     _pendingUpdate = true;
 }
 
@@ -218,7 +225,7 @@ void Map::effect(const Coord& tarjet, Effect& effect)
 {
     if(effect._haveSprite)
     {
-        effect._sprite.setScale(sf::Vector2f(_tileSize.x/64, _tileSize.y/64));
+        //effect._sprite.setScale(sf::Vector2f(_tileSize.x/64, _tileSize.y/64));
         effect._sprite.setActiveAnimation("effect");
 
         for(unsigned int i = 0; i < effect._area.size(); ++i)
@@ -227,6 +234,7 @@ void Map::effect(const Coord& tarjet, Effect& effect)
             if(correctCoord(coord))
             {
                 _effects.insert(_effects.end(), effect._sprite);
+                _effects.back().setScale(sf::Vector2f(_tileSize.x/64, _tileSize.y/64));
                 _effects.back().setPosition(_mapRect.left + coord.x*_tileSize.x, _mapRect.top + coord.y*_tileSize.y);
             }
         }
@@ -292,7 +300,7 @@ void Map::draw(sf::RenderWindow& window) const
                 window.draw(_map[i][j].rs_shape);
 
                 if(_map[i][j]._action != ActionType::AT_NONE) window.draw(_map[i][j].rs_action);
-                if(!_map[i][j].empty()) 
+                if(_unitsLoaded && !_map[i][j].empty()) 
                 {
                     window.draw(_map[i][j]._unit->_base._sprite);
                 }
@@ -411,7 +419,7 @@ bool Map::bfsMovement(const Coord& origin, unsigned int team, MovementType type,
             bool seg = false;
             int mod = 0;
 
-            if(!cell._checked)
+            if(!cell._checked || cell._distance > unsigned(dist + current.second))
             {
                 cell._distance = dist + current.second;
                 cell._checked = true;
@@ -429,7 +437,7 @@ bool Map::bfsMovement(const Coord& origin, unsigned int team, MovementType type,
 
                             if(range.find(cell._distance) != range.end())
                             {
-                                if(cell.empty())
+                                if(cell.empty() || cell._distance == 0)
                                 {
                                     cell._action = ActionType::AT_MOVE;
                                     tarjets = true;
