@@ -81,10 +81,7 @@ void Unit::applyModification(const Modification& modification)
 
     if(modification._modPassivesAdd)
     {
-        for(unsigned int i = 0; i < modification._pAdd.size(); ++i)
-        {
-            _passives.insert(_passives.end(), modification._pAdd[i]);
-        }
+        _passives.insert(_passives.end(), *modification._pAdd);
     }
 
     if(modification._modPassivesDel)
@@ -95,15 +92,12 @@ void Unit::applyModification(const Modification& modification)
         }
         else
         {
-            for(unsigned int i = 0; i < modification._pDel.size(); ++i)
+            std::list<Passive>::iterator it = _passives.begin();
+            while(it != _passives.end())
             {
-                std::list<Passive>::iterator it = _passives.begin();
-                while(it != _passives.end())
+                if(it->_name == modification._pDel)
                 {
-                    if(it->_name == modification._pDel[i])
-                    {
-                        it = _passives.erase(it);
-                    }
+                    it = _passives.erase(it);
                 }
             }
         }

@@ -587,35 +587,32 @@ void Database::readModification(jute::jValue source, Modification& modification)
         case 2:
         {
             if(params.size() != 1) throw Error("Bad modification params");
-            int size = params[0].size();
-            std::vector<Passive> add(size);
-            for(int i = 0; i < size; ++i)
+
+            Passive* add;
+            std::string name = params[0].as_string();
+
+            std::vector<Passive>::iterator it = _passives.begin();
+            bool found = false;
+            while(!found && it != _passives.end())
             {
-                std::string name = params[0][i].as_string();
-
-                std::vector<Passive>::iterator it = _passives.begin();
-                bool found = false;
-                while(!found && it != _passives.end())
+                if(it->_name == name)
                 {
-                    if(it->_name == name)
-                    {
-                        add[i] = *it;
-                        found = true;
-                    }
-                    ++it;
+                    add = &*it;
+                    found = true;
                 }
-
-                if(!found) throw Error("Passive <" + name + "> not found");
+                ++it;
             }
+
+            if(!found) throw Error("Passive <" + name + "> not found");
+
             modification = Modification(add);
         }
             break;
         case 3:
         {
             if(params.size() != 2) throw Error("Bad modification params");
-            int size = params[1].size();
-            std::vector<std::string> del(size);
-            for(int i = 0; i < size; ++i) del[i] = params[1][i].as_string();
+            std::string del;
+            del = params[1].as_string();
             modification = Modification(params[0].as_bool(), del);
         }
             break;

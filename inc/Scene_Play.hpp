@@ -54,6 +54,8 @@ private:
     void endTurn();
     void setDataUnit(const Unit& unit);
 
+    std::string getDataModification(const Modification& modification);
+
     void effect(const Coord& tarjet, Effect& effect);
     void ability(const Coord& tarjet, Ability& ability);
 

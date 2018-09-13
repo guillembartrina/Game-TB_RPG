@@ -8,7 +8,7 @@
 
 #include "Enums.hpp"
 
-class Passive; //DELETE?
+class Passive;
 
 class Modification
 {
@@ -17,8 +17,8 @@ public:
     Modification();
     Modification(UnitAttribute tarjet, bool relative, int value, bool invert, bool permanent, std::vector<std::pair<UnitAttribute, float>> sum, std::vector<std::pair<UnitAttribute, float>> res);
     Modification(UnitState tarjet, bool value, bool permanent);
-    Modification(std::vector<Passive> add);
-    Modification(bool delAll, std::vector<std::string> del);
+    Modification(Passive* add);
+    Modification(bool delAll, std::string del);
     ~Modification();
 
     /* ATTRIBUTES */
@@ -42,12 +42,12 @@ public:
     /* PASSIVES ADD*/
     bool _modPassivesAdd;
 
-    std::vector<Passive> _pAdd;
+    Passive* _pAdd;
 
     /* PASSIVES DEL*/
     bool _modPassivesDel;
 
-    std::vector<std::string> _pDel;
+    std::string _pDel;
     bool _pDelAll;
 
 

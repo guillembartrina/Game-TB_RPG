@@ -37,7 +37,7 @@ Modification::Modification(UnitState tarjet, bool value, bool permanent)
     _permanent = permanent;
 }
 
-Modification::Modification(std::vector<Passive> add)
+Modification::Modification(Passive* add)
 {
     _modAttributes = false;
     _modStates = false;
@@ -47,7 +47,7 @@ Modification::Modification(std::vector<Passive> add)
     _pAdd = add;
 }
 
-Modification::Modification(bool delAll, std::vector<std::string> del)
+Modification::Modification(bool delAll, std::string del)
 {
     _modAttributes = false;
     _modStates = false;

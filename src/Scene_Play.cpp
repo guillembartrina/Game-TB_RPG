@@ -479,6 +479,8 @@ void Scene_Play::initPhase(unsigned int team)
         }
     }
 
+    if(!_map.getPointerCell().empty()) setDataUnit(*_map.getPointerCell()._unit);
+
     _currentUnit = nullptr;
     _currentTurnPhase = TurnPhase::TP_BEGIN;
 }
@@ -576,7 +578,6 @@ void Scene_Play::setDataUnit(const Unit& unit)
         }
     }
 
-
     std::list<Passive>::const_iterator it2 = unit._passives.begin();
     while(it2 != unit._passives.end())
     {
@@ -596,27 +597,15 @@ void Scene_Play::setDataUnit(const Unit& unit)
         }
         str += " ]";
 
-        text.setString("#" + it2->_name + "#" + str);
+        text.setString(it2->_name + " " + str);
+        text.setStyle(sf::Text::Style::Bold);
         tmp.addText(sf::Vector2f(14, -10), text);
 
         for(unsigned int i = 0; i < it2->_modifications.size(); ++i)
         {
-            if(it2->_modifications[i]._modAttributes)
-            {
-                str = std::to_string(it2->_modifications[i]._aValue) + " " + UA_Strings[it2->_modifications[i]._aTarjet] + " | ";
-
-                for(unsigned int j = 0; j < it2->_modifications[i]._aSum.size(); ++j) str +=  "+" + UA_Strings[it2->_modifications[i]._aSum[j].first];
-                for(unsigned int j = 0; j < it2->_modifications[i]._aRes.size(); ++j) str +=  "-" + UA_Strings[it2->_modifications[i]._aRes[j].first];
-
-                text.setString(str);
-                tmp.addText(sf::Vector2f(14, 14 + 14*i), text);
-            }
-
-            if(it2->_modifications[i]._modStates)
-            {
-                text.setString(std::to_string(it2->_modifications[i]._sValue) + " " + US_Strings[it2->_modifications[i]._sTarjet]);
-                tmp.addText(sf::Vector2f(14, 14 + 14*i), text);
-            }
+            text.setString(getDataModification(it2->_modifications[i]));
+            text.setStyle(0);
+            tmp.addText(sf::Vector2f(14, 20 + 10*i), text);
         }
 
         _passives.add(tmp);
@@ -640,6 +629,43 @@ void Scene_Play::setDataUnit(const Unit& unit)
 
         _abilities.add(tmp);
     }
+}
+
+std::string Scene_Play::getDataModification(const Modification& modification)
+{
+    std::string out = "";
+
+    if(modification._modAttributes)
+    {
+        out = "A: ";
+        out += UA_Strings[modification._aTarjet] + " " + std::to_string(modification._aValue);
+        out += '\n';
+        
+        for(unsigned int j = 0; j < modification._aSum.size(); ++j) out +=  "+" + UA_Strings[modification._aSum[j].first];
+        for(unsigned int j = 0; j < modification._aRes.size(); ++j) out +=  "-" + UA_Strings[modification._aRes[j].first];
+    }
+    else if(modification._modStates)
+    {
+        out = "S: ";
+        out +=  US_Strings[modification._sTarjet] + " " + std::to_string(modification._sValue);
+    }
+    else if(modification._modPassivesAdd)
+    {
+        out = "+P: ";
+        out += modification._pAdd->_name;
+    }
+    else if(modification._modPassivesDel)
+    {
+        out = "-P: ";
+        if(modification._pDelAll) out += "ALL";
+        else out += modification._pDel;
+    }
+    else
+    {
+        out = "NOP";
+    }
+
+    return out;
 }
 
 void  Scene_Play::effect(const Coord& tarjet, Effect& effect)
