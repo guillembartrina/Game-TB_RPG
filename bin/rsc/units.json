@@ -1,0 +1,115 @@
+{
+    "Units": [
+        {
+            "name": "Lord",
+            "weapon": {
+                "weaponCompatibility": [0],
+                "byNameWeaponCompatibility": [],
+                "weapon": "Sword"
+            },
+            "abilities": [
+            ],
+            "movement": {
+                "movementType": 0,
+                "movementRange": [0, 1, 2],
+                "specialMovementRange": []
+            },
+            "attributes": [100, 25, 15],
+            "sprite": "unit1"
+        },
+        {
+            "name": "Swordman",
+            "weapon": {
+                "weaponCompatibility": [1],
+                "byNameWeaponCompatibility": [],
+                "weapon": "Sword"
+            },
+            "abilities": [
+            ],
+            "movement": {
+                "movementType": 0,
+                "movementRange": [0, 1, 2],
+                "specialMovementRange": []
+            },
+            "attributes": [100, 20, 10],
+            "sprite": "unit2"
+        },
+        {
+            "name": "Lancer",
+            "weapon": {
+                "weaponCompatibility": [1],
+                "byNameWeaponCompatibility": [],
+                "weapon": "Lance"
+            },
+            "abilities": [
+            ],
+            "movement": {
+                "movementType": 0,
+                "movementRange": [0, 1, 2],
+                "specialMovementRange": []
+            },
+            "attributes": [100, 10, 5],
+            "sprite": "unit3"
+        },
+        {
+            "name": "Archer",
+            "weapon": {
+                "weaponCompatibility": [5],
+                "byNameWeaponCompatibility": [],
+                "weapon": "Bow"
+            },
+            "abilities": [
+            ],
+            "movement": {
+                "movementType": 0,
+                "movementRange": [0, 1, 2],
+                "specialMovementRange": []
+            },
+            "attributes": [100, 5, 10],
+            "sprite": "unit4"
+        },
+        {
+            "name": "Mage",
+            "weapon": {
+                "weaponCompatibility": [],
+                "byNameWeaponCompatibility": [],
+                "weapon": "Sword"
+            },
+            "abilities": [
+                {
+                    "name": "Fireball",
+                    "range": [0, 1, 2],
+                    "effects": [
+                        [ 
+                            [0, 0],
+                            {
+                                "area": [
+                                    [0, 0],
+                                    [0, 1],
+                                    [0, -1],
+                                    [1, 0],
+                                    [-1, 0]
+                                ],
+                                "modifications": [
+                                    {
+                                        "type": 0,
+                                        "params": [0, true, -30, false, true, [], []]
+                                    }
+                                ],
+                                "sprite": "explosion",
+                                "sound": "explosion"
+                            }
+                        ]
+                    ]
+                }
+            ],
+            "movement": {
+                "movementType": 0,
+                "movementRange": [0, 1],
+                "specialMovementRange": []
+            },
+            "attributes": [100, 10, 30],
+            "sprite": "unit4"
+        }
+    ]
+}

@@ -1,0 +1,111 @@
+MAP:
+{
+    "name": "",
+    "map": [
+        #MATRIX
+    ],
+    "teams": [
+        [
+            #COORDS
+        ],
+        [
+            #COORDS
+        ]
+    ]
+}
+
+WEAPON:
+{
+    "name": "",
+    "type": #INT,
+    "range": {
+        "range": [#INTS],
+        "specialRange": #BOOL,
+        "specialRangeCoords": [#COORDS]
+    },
+    "enemy": {
+        "tarjetsEnemy": #BOOL,
+        "effects": [
+            #COORDS
+        ],
+        "otherEffects": {
+            #EFFECT
+        }
+    },
+    "ally": {
+        "tarjetsAlly": #BOOL,
+        "effects": [
+            #COORDS
+        ],
+        "otherEffects": {
+            #EFFECT
+        }
+    }
+}
+
+UNIT:
+{
+    "name": "",
+    "weapon": {
+        "weaponCompatibility": [#INTS],
+        "byNameWeaponCompatibility": [#STRINGS],
+        "weapon": ""
+    },
+    "movement": {
+        "movementType": #INT,
+        "movementRange": [#INTS],
+        "specialMovementRange": [#COORDS]
+    },
+    "attributes": [#INTS],
+    "sprite": ""
+}
+
+MODIFICATION:
+{
+    "type": #INT,
+    "params": [#PARAMS]
+}
+
+EFFECT:
+{
+    "area": [
+        #INT_COORDS
+    ],
+    "modifications": [
+        #MODIFICATION
+    ],
+    "sprite": "",
+    "sound": ""
+}
+
+ABILITY:
+{
+    "name": "",
+    "effects": [
+        [#COORD, #EFFECT]
+    ]
+}
+
+
+{
+                    "name": "Fireball",
+                    "range": [0, 1, 2],
+                    "effects": [
+                        [ 
+                            [0, 0],
+                            {
+                                "area": [
+                                    [0, 0]
+                                ],
+                                "modifications": [
+                                    {
+                                        "type": 0,
+                                        "params": [0, true, -10, false, true, [], []]
+                                    }
+                                ],
+                                "sprite": "explosion",
+                                "sound": "explosion"
+                            }
+                        ]
+                    ]
+                }

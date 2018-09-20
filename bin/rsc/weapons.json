@@ -1,0 +1,89 @@
+{
+    "Weapons": [
+        {
+            "name": "Sword",
+            "type": 0,
+            "range": {
+                "range": [1],
+                "specialRange": false,
+                "specialRangeCoords": []
+            },
+            "enemy": {
+                "tarjetsEnemy": true,
+                "effects": [
+                    [0, 30]
+                ],
+                "otherEffects": [
+                    {
+                        "area": [
+                            [0, 0]
+                        ],
+                        "modifications": [
+                            {
+                                "type": 2,
+                                "params": ["Venom"]
+                            }
+                        ],
+                        "sprite": "",
+                        "sound": ""
+                    }
+                ]
+            },
+            "ally": {
+                "tarjetsAlly": false,
+                "effects": [
+                ],
+                "otherEffects": [
+                ]
+            }
+        },
+        {
+            "name": "Lance",
+            "type": 1,
+            "range": {
+                "range": [1],
+                "specialRange": false,
+                "specialRangeCoords": []
+            },
+            "enemy": {
+                "tarjetsEnemy": true,
+                "effects": [
+                    [0, 20]
+                ],
+                "otherEffects": [
+                ]
+            },
+            "ally": {
+                "tarjetsAlly": false,
+                "effects": [
+                ],
+                "otherEffects": [
+                ]
+            }
+        },
+        {
+            "name": "Bow",
+            "type": 5,
+            "range": {
+                "range": [2],
+                "specialRange": false,
+                "specialRangeCoords": []
+            },
+            "enemy": {
+                "tarjetsEnemy": true,
+                "effects": [
+                    [0, 20]
+                ],
+                "otherEffects": [
+                ]
+            },
+            "ally": {
+                "tarjetsAlly": false,
+                "effects": [
+                ],
+                "otherEffects": [
+                ]
+            }
+        }
+    ]
+}

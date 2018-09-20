@@ -1,0 +1,26 @@
+{
+    "Passives": [
+        {
+            "name": "Venom",
+            "turns": 3,
+            "triggerTurns": [0, 1],
+            "modifications": [
+                {
+                    "type": 0,
+                    "params": [0, true, -10, false, true, [], []]
+                }
+            ]
+        },
+        {
+            "name": "BrokenDef",
+            "turns": 2,
+            "triggerTurns": [1],
+            "modifications": [
+                {
+                    "type": 0,
+                    "params": [1, true, 10, false, false, [], []]
+                }
+            ]
+        }
+    ]
+}
