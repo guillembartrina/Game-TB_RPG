@@ -2,14 +2,28 @@
 
 Modification::Modification()
 {
+    _modBasic = false;
     _modAttributes = false;
     _modStates = false;
     _modPassivesAdd = false;
     _modPassivesDel = false;
 }
 
+Modification::Modification(PredefinedEffect type, int value)
+{
+    _modBasic = true;
+    _modAttributes = false;
+    _modStates = false;
+    _modPassivesAdd = false;
+    _modPassivesDel = false;
+
+    _bType = type;
+    _bValue = value;
+}
+
 Modification::Modification(UnitAttribute tarjet, bool relative, int value, bool invert, bool permanent, std::vector<std::pair<UnitAttribute, float>> sum, std::vector<std::pair<UnitAttribute, float>> res)
 {
+    _modBasic = false;
     _modAttributes = true;
     _modStates = false;
     _modPassivesAdd = false;
@@ -27,6 +41,7 @@ Modification::Modification(UnitAttribute tarjet, bool relative, int value, bool 
 
 Modification::Modification(UnitState tarjet, bool value, bool permanent)
 {
+    _modBasic = false;
     _modAttributes = false;
     _modStates = true;
     _modPassivesAdd = false;
@@ -39,6 +54,7 @@ Modification::Modification(UnitState tarjet, bool value, bool permanent)
 
 Modification::Modification(Passive* add)
 {
+    _modBasic = false;
     _modAttributes = false;
     _modStates = false;
     _modPassivesAdd = true;
@@ -49,6 +65,7 @@ Modification::Modification(Passive* add)
 
 Modification::Modification(bool delAll, std::string del)
 {
+    _modBasic = false;
     _modAttributes = false;
     _modStates = false;
     _modPassivesAdd = false;

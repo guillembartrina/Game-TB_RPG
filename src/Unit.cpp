@@ -47,6 +47,49 @@ void Unit::init(const UnitData& unitData, int team, const Coord& position)
 
 void Unit::applyModification(const Modification& modification)
 {
+    if(modification._modBasic)
+    {
+        int val = modification._bValue;
+
+        switch(modification._bType)
+        {
+            case PredefinedEffect::DAMAGE_F:
+            {
+                val += _attributes[UnitAttribute::UA_DMG_F_B];
+                val *= _attributes[UnitAttribute::UA_DMG_F_P];
+
+                val -= _attributes[UnitAttribute::UA_RESIST_F];
+                if(val < 0) val = 0;
+            }
+                break;
+            case PredefinedEffect::DAMAGE_M:
+            {
+                val += _attributes[UnitAttribute::UA_DMG_M_B];
+                val *= _attributes[UnitAttribute::UA_DMG_M_P];
+
+                val -= _attributes[UnitAttribute::UA_RESIST_M];
+                if(val < 0) val = 0;
+            }
+                break;
+            case PredefinedEffect::DAMAGE_T:
+            {
+                val += _attributes[UnitAttribute::UA_DMG_T_B];
+                val *= _attributes[UnitAttribute::UA_DMG_T_P];
+            }
+                break;
+            case PredefinedEffect::HEAL:
+            {
+                val += _attributes[UnitAttribute::UA_HEAL_B];
+                val *= _attributes[UnitAttribute::UA_HEAL_P];
+
+                val *= -1;
+            }
+                break;
+        }
+
+        _attributes[UnitAttribute::UA_HP] -= val;
+    }
+
     if(modification._modAttributes)
     {
         int res = modification._aValue;

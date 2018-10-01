@@ -92,7 +92,7 @@
                                 ],
                                 "modifications": [
                                     {
-                                        "type": 0,
+                                        "type": 1,
                                         "params": [0, true, -30, false, true, [], []]
                                     }
                                 ],

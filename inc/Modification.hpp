@@ -15,11 +15,18 @@ class Modification
 public:
 
     Modification();
+    Modification(PredefinedEffect type, int value);
     Modification(UnitAttribute tarjet, bool relative, int value, bool invert, bool permanent, std::vector<std::pair<UnitAttribute, float>> sum, std::vector<std::pair<UnitAttribute, float>> res);
     Modification(UnitState tarjet, bool value, bool permanent);
     Modification(Passive* add);
     Modification(bool delAll, std::string del);
     ~Modification();
+
+    /* BASIC */
+    bool _modBasic;
+
+    PredefinedEffect _bType;
+    int _bValue;
 
     /* ATTRIBUTES */
     bool _modAttributes;
@@ -50,8 +57,7 @@ public:
     std::string _pDel;
     bool _pDelAll;
 
-
     bool _permanent;
-};
+}; 
 
 #endif

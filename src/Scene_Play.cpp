@@ -14,13 +14,18 @@ void Scene_Play::init()
     t_title.setString("Press 'e' to exit");
     t_title.setCharacterSize(30);
     t_title.setFillColor(sf::Color::White);
-    t_title.setPosition(10, 700);
+    t_title.setPosition(10, 760);
 
     t_currentTeam.setFont(_resources.Font("font1"));
     t_currentTeam.setCharacterSize(40);
     t_currentTeam.setStyle(sf::Text::Style::Bold);
     t_currentTeam.setFillColor(sf::Color::Yellow);
     t_currentTeam.setPosition(12, 606);
+
+    t_currentRemaining.setFont(_resources.Font("font1"));
+    t_currentRemaining.setCharacterSize(30);
+    t_currentRemaining.setFillColor(sf::Color::White);
+    t_currentRemaining.setPosition(12, 640);
 
     rs_info.setPosition(105, 620);
     rs_info.setSize(sf::Vector2f(472, 175));
@@ -38,18 +43,20 @@ void Scene_Play::init()
     }
 
     t_dataUnit[DataUnit::DU_NAME].setPosition(120, 610);
-    t_dataUnit[DataUnit::DU_TEAM].setPosition(270, 610);
-    t_dataUnit[DataUnit::DU_HP].setPosition(120, 645);
-    t_dataUnit[DataUnit::DU_RESIST_F].setPosition(120, 661);
-    t_dataUnit[DataUnit::DU_RESIST_M].setPosition(120, 677);
-    t_dataUnit[DataUnit::DU_WEAPON].setPosition(250, 645);
-    t_dataUnit[DataUnit::DU_WEAPON_TYPE].setPosition(270, 661);
-    t_dataUnit[DataUnit::DU_WEAPON_RANGE].setPosition(270, 677);
-    t_dataUnit[DataUnit::DU_WEAPON_SPECIAL_RANGE].setPosition(270, 693);
-    t_dataUnit[DataUnit::DU_MOVEMENT].setPosition(250, 721);
-    t_dataUnit[DataUnit::DU_MOVEMENT_RANGE].setPosition(270, 737);
-    t_dataUnit[DataUnit::DU_MOVEMENT_SPECIAL_RANGE].setPosition(270, 753);
-    t_dataUnit[DataUnit::DU_GOD].setPosition(300, 610);
+    t_dataUnit[DataUnit::DU_TEAM].setPosition(120, 626);
+    t_dataUnit[DataUnit::DU_HP].setPosition(120, 652);
+    t_dataUnit[DataUnit::DU_RESIST_F].setPosition(120, 668);
+    t_dataUnit[DataUnit::DU_RESIST_M].setPosition(120, 684);
+    t_dataUnit[DataUnit::DU_WEAPON].setPosition(120, 714);
+    t_dataUnit[DataUnit::DU_WEAPON_BASIC_E].setPosition(140, 730);
+    t_dataUnit[DataUnit::DU_WEAPON_BASIC_A].setPosition(140, 746);
+    t_dataUnit[DataUnit::DU_WEAPON_TYPE].setPosition(270, 610);
+    t_dataUnit[DataUnit::DU_WEAPON_RANGE].setPosition(270, 626);
+    t_dataUnit[DataUnit::DU_WEAPON_SPECIAL_RANGE].setPosition(270, 642);
+    t_dataUnit[DataUnit::DU_MOVEMENT].setPosition(250, 666);
+    t_dataUnit[DataUnit::DU_MOVEMENT_RANGE].setPosition(270, 682);
+    t_dataUnit[DataUnit::DU_MOVEMENT_SPECIAL_RANGE].setPosition(270, 698);
+    t_dataUnit[DataUnit::DU_GOD].setPosition(300, 800);
     t_dataUnit[DataUnit::DU_GOD].setString("");
 
     t_infoAbility.setFont(_resources.Font("font1"));
@@ -415,6 +422,7 @@ void Scene_Play::draw(sf::RenderWindow& window) const
     window.draw(rs_info);
     window.draw(t_title);
     window.draw(t_currentTeam);
+    window.draw(t_currentRemaining);
 
 
     if(_currentTurnPhase != TurnPhase::TP_SELECTED) window.draw(t_infoFinish);
@@ -481,6 +489,8 @@ void Scene_Play::initPhase(unsigned int team)
 
     if(!_map.getPointerCell().empty()) setDataUnit(*_map.getPointerCell()._unit);
 
+    t_currentRemaining.setString("Remain: " + std::to_string(_remainUnits));
+
     _currentUnit = nullptr;
     _currentTurnPhase = TurnPhase::TP_BEGIN;
 }
@@ -492,6 +502,7 @@ void Scene_Play::endTurn()
     _currentUnit->_base._sprite.setColor(sf::Color(102, 102, 102));
     _map.eraseSelection();
     --_remainUnits;
+    t_currentRemaining.setString("Remain: " + std::to_string(_remainUnits));
     if(_remainUnits == 0) initPhase((++_currentTeam)%_teams.size());
     _currentTurnPhase = TurnPhase::TP_BEGIN;   
 }
@@ -504,9 +515,26 @@ void Scene_Play::setDataUnit(const Unit& unit)
     t_dataUnit[DataUnit::DU_RESIST_F].setString("RES(F): " + std::to_string(unit._attributes[UnitAttribute::UA_RESIST_F]));
     t_dataUnit[DataUnit::DU_RESIST_M].setString("RES(M): " + std::to_string(unit._attributes[UnitAttribute::UA_RESIST_M]));
     t_dataUnit[DataUnit::DU_WEAPON].setString("WEAPON: " + unit._base._weapon._name);
+    t_dataUnit[DataUnit::DU_WEAPON_BASIC_A].setString("Ally: error");
     t_dataUnit[DataUnit::DU_WEAPON_TYPE].setString("Type: " + WT_Strings[unit._base._weapon._type]);
 
     std::string tmp = "";
+    for(unsigned int i = 0; i < unit._base._weapon._enemy.size(); ++i)
+    {
+        tmp += getDataEffect(unit._base._weapon._enemy[i]);
+    }
+
+    t_dataUnit[DataUnit::DU_WEAPON_BASIC_E].setString("Enemy: " + tmp);
+
+    tmp = "";
+    for(unsigned int i = 0; i < unit._base._weapon._ally.size(); ++i)
+    {
+        tmp += getDataEffect(unit._base._weapon._ally[i]);
+    }
+
+    t_dataUnit[DataUnit::DU_WEAPON_BASIC_A].setString("Ally: " + tmp);
+
+    tmp = "";
     std::set<int>::const_iterator it = unit._base._weapon._range.begin();
     while(it != unit._base._weapon._range.end())
     {
@@ -631,11 +659,28 @@ void Scene_Play::setDataUnit(const Unit& unit)
     }
 }
 
+std::string Scene_Play::getDataEffect(const Effect& effect)
+{
+    std::string out = "";
+    for(unsigned int i = 0; i < effect._modifications.size(); ++i)
+    {
+        out += "[";
+        out += getDataModification(effect._modifications[i]);
+        out += "]";
+    }
+
+    return out;
+}
+
 std::string Scene_Play::getDataModification(const Modification& modification)
 {
     std::string out = "";
 
-    if(modification._modAttributes)
+    if(modification._modBasic)
+    {
+        out = PE_Strings[modification._bType] + " " + std::to_string(modification._bValue);
+    }
+    else if(modification._modAttributes)
     {
         out = "A: ";
         out += UA_Strings[modification._aTarjet] + " " + std::to_string(modification._aValue);

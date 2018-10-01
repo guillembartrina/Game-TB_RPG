@@ -18,6 +18,8 @@ enum DataUnit
     DU_RESIST_F,
     DU_RESIST_M,
     DU_WEAPON,
+    DU_WEAPON_BASIC_E,
+    DU_WEAPON_BASIC_A,
     DU_WEAPON_TYPE,
     DU_WEAPON_RANGE,
     DU_WEAPON_SPECIAL_RANGE,
@@ -54,6 +56,7 @@ private:
     void endTurn();
     void setDataUnit(const Unit& unit);
 
+    std::string getDataEffect(const Effect& effect);
     std::string getDataModification(const Modification& modification);
 
     void effect(const Coord& tarjet, Effect& effect);
@@ -80,6 +83,7 @@ private:
     sf::Text t_title;
     sf::RectangleShape rs_info;
     sf::Text t_currentTeam;
+    sf::Text t_currentRemaining;
     std::vector<sf::Text> t_dataUnit;
     sf::Text t_infoAbility;
     sf::Text t_infoFinish;

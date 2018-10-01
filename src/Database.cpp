@@ -502,31 +502,20 @@ Effect Database::getEffect(PredefinedEffect id, int value)
     effect._haveSprite = true;
     effect._haveSound = true;
 
+    if(id == PredefinedEffect::HEAL)
+    {
+        effect._sprite.addAnimation("effect", resources.Texture("heal"), 4, sf::Vector2u(64, 64), sf::seconds(0.1f), false);
+        effect._sound = sf::Sound(resources.Sound("heal"));
+    }
+    else
+    {
+        effect._sprite.addAnimation("effect", resources.Texture("attack"), 4, sf::Vector2u(64, 64), sf::seconds(0.1f), false);
+        effect._sound = sf::Sound(resources.Sound("attack"));
+    }
+
     Modification modification;
 
-    switch(id)
-    {
-        case PredefinedEffect::DAMAGE_F:
-            modification = Modification(UnitAttribute::UA_HP, true, -value, false, true, {std::make_pair(UnitAttribute::UA_RESIST_F, 1.f)}, {});
-            effect._sprite.addAnimation("effect", resources.Texture("attack"), 4, sf::Vector2u(64, 64), sf::seconds(0.1f), false);
-            effect._sound = sf::Sound(resources.Sound("attack"));
-            break;
-        case PredefinedEffect::DAMAGE_M:
-            modification = Modification(UnitAttribute::UA_HP, true, -value, false, true, {std::make_pair(UnitAttribute::UA_RESIST_M, 1.f)}, {});
-            effect._sprite.addAnimation("effect", resources.Texture("attack"), 4, sf::Vector2u(64, 64), sf::seconds(0.1f), false);
-            effect._sound = sf::Sound(resources.Sound("attack"));
-            break;
-        case PredefinedEffect::DAMAGE_T:
-            modification = Modification(UnitAttribute::UA_HP, true, -value, false, true, {}, {});
-            effect._sprite.addAnimation("effect", resources.Texture("attack"), 4, sf::Vector2u(64, 64), sf::seconds(0.1f), false);
-            effect._sound = sf::Sound(resources.Sound("attack"));
-            break;
-        case PredefinedEffect::HEAL:
-            modification = Modification(UnitAttribute::UA_HP, true, value, false, true, {}, {});
-            effect._sprite.addAnimation("effect", resources.Texture("heal"), 4, sf::Vector2u(64, 64), sf::seconds(0.1f), false);
-            effect._sound = sf::Sound(resources.Sound("heal"));
-            break;
-    }
+    modification = Modification(id, value);
 
     effect._modifications = {modification};
 
@@ -570,6 +559,12 @@ void Database::readModification(jute::jValue source, Modification& modification)
     {
         case 0:
         {
+            if(params.size() != 2) throw Error("Bad modification params");
+            modification = Modification(PredefinedEffect(params[0].as_int()), params[1].as_int());
+        }
+            break;
+        case 1:
+        {
             if(params.size() != 7) throw Error("Bad modification params");
             int size = params[5].size();
             std::vector<std::pair<UnitAttribute, float>> sum(size);
@@ -580,11 +575,11 @@ void Database::readModification(jute::jValue source, Modification& modification)
             modification = Modification(UnitAttribute(params[0].as_int()), params[1].as_bool(), params[2].as_int(), params[3].as_bool(), params[4].as_bool(), sum, res);
         }
             break;
-        case 1:
+        case 2:
             if(params.size() != 3) throw Error("Bad modification params");
             modification = Modification(UnitState(params[0].as_int()), params[1].as_bool(), params[2].as_bool());
             break;
-        case 2:
+        case 3:
         {
             if(params.size() != 1) throw Error("Bad modification params");
 
@@ -608,7 +603,7 @@ void Database::readModification(jute::jValue source, Modification& modification)
             modification = Modification(add);
         }
             break;
-        case 3:
+        case 4:
         {
             if(params.size() != 2) throw Error("Bad modification params");
             std::string del;

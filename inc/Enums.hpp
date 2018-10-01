@@ -41,10 +41,18 @@ enum UnitAttribute
     UA_HP,
     UA_RESIST_F,
     UA_RESIST_M,
+    UA_DMG_F_B,
+    UA_DMG_M_B,
+    UA_DMG_T_B,
+    UA_HEAL_B,
+    UA_DMG_F_P,
+    UA_DMG_M_P,
+    UA_DMG_T_P,
+    UA_HEAL_P,
     UA_ELEMS
 };
 
-static const std::vector<std::string> UA_Strings{"HP", "RES(F)", "RES(M)"};
+static const std::vector<std::string> UA_Strings{"HP", "R(F)", "R(M)", "D(F).B", "D(M).B", "D(T).B", "H.B", "D(F).P", "D(M).P", "D(T).P", "H.P"};
 
 enum OtherUnitAttribute
 {
@@ -93,6 +101,8 @@ enum PredefinedEffect
     DAMAGE_T,
     HEAL
 };
+
+static const std::vector<std::string> PE_Strings{"D(F)", "D(M)", "D(T)", "H"};
 
 enum TerrainType
 {
