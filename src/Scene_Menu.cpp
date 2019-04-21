@@ -7,7 +7,7 @@ Scene_Menu::~Scene_Menu() {}
 void Scene_Menu::init()
 {
     t_title.setFont(_resources.Font("font"));
-    t_title.setString("TB RPG");
+    t_title.setString("TITLE");
     t_title.setCharacterSize(90);
     t_title.setFillColor(sf::Color::Yellow);
     t_title.setPosition(170, 100);
